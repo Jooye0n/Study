@@ -1,23 +1,25 @@
 # Plan
-5/13 ~ 6/5
+5/13 ~ 6/6
 - 친절한 SQL 튜닝 2회독 후 정리
-- 출퇴근길 SQLD 정리영상 (6월)
-- 책 정리 글 꾸준히 읽기 (6월)
-6/6 ~ 6/21
-- 오라클 성능 고도화 원리와 해법 1권(1, 2, 4, 5장) 
-- 출퇴근길 SQLD 정리 전자책
-- 책 정리 글 꾸준히 읽기
-6/22 ~ 7/1
-- SQLP 핵심노트 1, 2 문제풀이 1회
-7/2 ~ 7/5
+- SQLD 정리 뭘로할지 픽스
+6/7 ~ 7/1 
+- 오라클 성능 고도화 원리와 해법 1권(1, 2, 4, 5장) 1회독 (하루 45P)
+- 오라클 성능 고도화 원리와 해법 2권 1회독 (하루 45P)
+- 출퇴근길 SQLD 정리 전자책 + 책 정리 글
+- 공부한 챕터별 SQLP 핵심노트 1, 2 문제풀이
+7/3 ~ 7/6
 - 하타
-7/6 ~ 7/31
-- 오라클 성능 고도화 원리와 해법 2권
-- 출퇴근길 ..? SQLP 핵심노트 1, 2 문제풀이 2회.. ?
-- ==실기 대비 착실히== 
+7/6 ~ 7/24
+- 오라클 성능 고도화 원리와 해법 1권(1, 2, 4, 5장) 1회독
+- 오라클 성능 고도화 원리와 해법 2권 1회독
+- 출퇴근길 SQLD 정리 전자책 + 책 정리 글
+- 손으로 써보면서 실기 대비
+7/25 ~ 7/31
+- SQLP 핵심노트 1, 2 문제풀이
 8/1 ~ 8/15
-- SQL 전문가 가이드 / 챕터마다 풀이
-- SQLP 핵심노트 1, 2 문제풀이 3회
+- 손으로 써보면서 실기 대비
+- SQL 전문가 가이드 챕터별 문제풀이
+- SQLP 핵심노트 1, 2 문제풀이 3회차
 - SQL 자격검정 실전문제 문제풀이 
 8/16 ~ 8/21
 - 마무리 정리 / 암기
@@ -29,23 +31,24 @@
 - [x] 오라클 실습환경 구성
 - [x] 6장 읽기
 6/1 월
-- [ ] 3장 정리(1)
-- [ ] 7장 읽기
+- [x] 3장 정리(1)
+- [x] 7장 읽기
 6/2 화
-- [ ] 3장 정리(2)
-- [ ] SQL분석도구 읽기 / 가능하면 정리까지
 6/3 수
+- [x] 3장 정리(2)
 - [ ] 4장 정리
-- [ ] 5장 정리
 6/4 목
-- [ ] 6장 정리(1)
+- [ ] 5장 정리
+- [ ] SQL분석도구 읽기 / 가능하면 정리까지
 6/5 금
+- [ ] 6장 정리(1)
+6/6 토
 - [ ] 6장 정리(2)
 - [ ] 7장 정리
 # [1장] SQL 처리 과정과 I/O
 ---
 ### 1. `옵티마이저`란? 
-SQL은 Structured Query Language 의 줄임말이다. 말 그대로 구조적 질의 언어이다. 오라클 PL/SQL, SQL Server T-SQL 처럼 절차적으로 프로그래밍 기능을 구현할 수 있는 확장 언어도 존재하지만, SQL은 기본적으로 구조적이고 집합적이고 선언적인 질의 언어다. 원하는 집합을 구조적으로 선언하지만, 그 결과집합을 만드는 과정은 절차적일 수밖에 없다. **즉, 프로시저가 필요한데, 그런 프로시저를 만들어 내는 DBMS 내부 엔진이 바로 SQL ==옵티마이저==다.** 
+SQL은 Structured Query Language 의 줄임말이다. 말 그대로 구조적 질의 언어이다. 오라클 PL/SQL 사용자 정의 함수, SQL Server T-SQL 처럼 절차적으로 프로그래밍 기능을 구현할 수 있는 확장 언어도 존재하지만, SQL은 기본적으로 구조적이고 집합적이고 선언적인 질의 언어다. 원하는 집합을 구조적으로 선언하지만, 그 결과집합을 만드는 과정은 절차적일 수밖에 없다. **즉, 프로시저가 필요한데, 그런 프로시저를 만들어 내는 DBMS 내부 엔진이 바로 SQL ==옵티마이저==다.** 
 ### 2. `SQL 최적화`란?
 DBMS 내부에서 프로시저를 작성하고 컴파일해서 실행 가능한 상태로 만드는 전 과정을 SQL 최적화라고 한다. 최적화 과정을 세분화하면, 아래 3단계로 말할 수 있다. (그 중에서도 2단계를 많이들 최적화라고 하는 것 같다.)
 1. SQL 파싱: SQL 파서가 진행. 파싱 트리 생성 > Syntax 체크 > Semantic 체크
@@ -99,8 +102,6 @@ DBMS는 버퍼캐시를 해시 구조로 관리한다. 버퍼캐시에서 블록
 \* 같은 입력 값은 항상 동일한 해시 체인(=버킷)에 연결된다. 
 모든 블록에 대해 해시 체인을 탐색한다. DBA를 해시 함수에 입력하고 거기서 반환된 값으로 스캔해야 할 해시 체인을 찾는다. 공유되는 자원의 순차적 접근을 위해 해시 ==체인 래치(Latch)==가 존재한다. 해시 체인 앞쪽에 자물쇠가 있다고 생각하면 된다. 블록을 찾으면 체인 래치를 바로 해제해야 한다. 그러나 후행 블록이 같은 블록에 접근해 읽고 쓴다면 정합성에 문제가 생길 수 있다. 오라클은 이를 방지하기 위해 캐시버퍼 체인 래치를 해제하기 전에 버퍼 헤더에 락을 설정하여 버퍼블록 자체에 대한 직렬화 문제를 해결한다. 
 이런 메커니즘에 의한 캐시 경합을 줄이려면 SQL 튜닝을 통해 쿼리 일량(논리적 I/O) 자체를 줄요야 한다.
-
-
 # [2장] 인덱스 기본
 
 ---
@@ -127,6 +128,8 @@ DBMS는 버퍼캐시를 해시 구조로 관리한다. 버퍼캐시에서 블록
 '인덱스를 정상적으로 사용한다'는 표현은 리프 블록 일부만 스캔하는 Index Range Scan을 의미한다. 즉 리프 블록에서 스캔 시작 지점을 찾아 거기서부터 스캔하다가 전부 찾으면 스캔을 중간에 멈추는 것을 의미한다. 
 인덱스 컬럼을 가공했을 때 인덱스를 정상적으로 사용할 수 없는 이유는 <u>인덱스 스캔 시작점을 찾을 수 없기 때문</u>이다. 즉, 수직적 탐색을 할 수 없기 때문이다. 사전에서 '대한'으로 시작하는 값은 특정 구간에 모여 있으므로 Range Scan이 가능하지만, '대한'을 포함하는 값은 전체 구간에 걸쳐 흩어져 있어 Range Scan이 불가능하다. 
 OR 조건은 OR Expansion 으로, IN 조건절은 IN-List Iterator 방식으로 변환하는 이유이다. 
+`*OR EXpansion: UNION ALL 로 쪼개서 실행`
+또한, `where (:cust_id is null or 고객ID = :cust_id` 처럼 옵션 조건 컬럼을 선두에 두고 고객ID를 선두 컬럼 인덱스로 구성하는 경우에도 인덱스를 사용할 수 없다. <u>하나의 SQL에 하나의 실행 계획을 만들어야 하기 때문이다. 선두컬럼은 액세스 조건으로 쓰기 어려운 상태가 되어버린다.</u>
 **두번째 컬럼만 가공하면 어떨까?** 두번째 컬럼만 가공하면 두번째 인덱스 컬럼은 스캔 범위를 줄이는 데 전혀 역할을 하지 못한다. 따라서 인덱스에서 스캔하는 데이터량은 첫번째 인덱스 컬럼 조건을 만족하는 건수와 동일해진다.
 ### 5. 인덱스 컬럼을 가공하지 않았는데 인덱스를 안탈수도 있다. 왜?
 우선 '인덱스를 탄다'는 표현은 '인덱스를 Range Scan한다'와 같은 의미인 셈이다. 인덱스 Range Scan에는 더 중요한 선행조건이 있다. <u>인덱스 선두 컬럼이 조건절에 있어야 한다</u>는 사실이다. 가공하지 않은 상태로 말이다. 인덱스의 두번째, 세번째 컬럼이 가공되어도 인덱스 선두 컬럼이 가공되지 않은 상태로 조건절에 있다면 인덱스 Range Scan은 무조건 가능하다. Range Scan은 시작점을 찾는 수직적 탐색이라는 것을 기억하자.
@@ -194,6 +197,8 @@ filter = 읽고 나서 거르는 조건
 ex)
 access("장비구분코드"='A001')
 filter("상태코드"='Y')
+
+참고로 Predicate 숫자 = 실행계획에서 그 조건이 적용된 작업 ID를 뜻한다.
 ```
 ### 9. 오라클의 형변환
 타입 체크를 엄격히 함으로써 컴파일 시점에 에러를 내는 DBMS가 있는가 하면, 자동으로 형변환 처리해주는 DBMS도 있다. 오라클은 후자에 속한다. `NUMBER > CHAR, DATE > CHAR` 
@@ -205,7 +210,7 @@ WHERE 계좌번호 LIKE :acnt_no || '%'
 AND   거래일자 between :trd_dt1 and :trd_dt2;
 ```
 계좌번호의 옵션처리를 위해 위 처럼 SQL을 작성한다면, 
-숫자형 컬럼인 계좌번호를 LIKE 조건으로 검색하게되어 자동 형변환이 생기고 계좌번호는 아예 인덱스 조건으로 사용되지 못한다. 주의하자.
+숫자형 컬럼인 계좌번호를 LIKE 조건으로 검색하게되어 ==자동 형변환이 생기고 계좌번호는 아예 인덱스 조건으로 사용되지 못한다.== 주의하자.
 
 ```sql
 decode(job, 'PRESIDENT', NULL, sal)
@@ -239,7 +244,7 @@ SELECT STATEMENT Optimizer=ALL_ROWS
 		INDEX (UNIQUE SCAN) OF 'EMP_DEPTNO_IDX' (UNIQUE)
 ```
 #### 4) Index Skip Scan
-: 조건절에 빠진 인덱스 선두 컬럼의 Dstinct Value 개수가 적고 후행 컬럼의 Distinct Value 개수가 많을 때 유용하다. 루트 또는 브랜치 블록에서 읽은 컬럼 값 정보를 이용해 조건절에 부합하는 레코드를 포함할 '가능성이 있는' 리프 블록만 골라서 액세스하는 스캔 방식이다. 선두 컬럼에 대한 조건절은 있고, 중간 컬럼에 대한 조건절이 없는 경우에도 유용하게 사용할 수 있다. 
+: 조건절에 빠진 인덱스 선두 컬럼의 Distinct Value 개수가 적고 후행 컬럼의 Distinct Value 개수가 많을 때 유용하다. 루트 또는 브랜치 블록에서 읽은 컬럼 값 정보를 이용해 조건절에 부합하는 레코드를 포함할 '가능성이 있는' 리프 블록만 골라서 액세스하는 스캔 방식이다. 선두 컬럼에 대한 조건절은 있고, 중간 컬럼에 대한 조건절이 없는 경우에도 유용하게 사용할 수 있다. 꼭 특정 조건절이 없는 경우가 아니더라도, 선두 컬럼의 Distinct Value 개수가 적으면서 `BETWEEN`, `<`, `>`, `LIKE` 같은 범위조건이라 후행 등치조건을 제대로 못 살릴 때도 비슷한 효과를 낼 수 있다.
 ```sql
 SELECT STATEMENT Optimizer=ALL_ROWS
 	TABLE ACCESS (BY INDEX ROWID) OF 'EMP'
@@ -399,7 +404,7 @@ Execution Plan
 정렬 조건이 있을 경우 부분범위 처리를 할 수 없다. 그러나 정렬 기준 컬럼이 선두로 있는 인덱스가 있으면 부분범위 처리가 가능하다. 
 네트워크를 통해 전송해야 할 데이터량에 따라 Array Size(=데이터를 전송하는 단위)를 조절할 필요가 있다. 대량 데이터를 파일로 내려받는다면 어차피 모두 전송해야 하므로 가급적 값을 크게 설정해야 한다. Fetch Call 횟수를 그만큼 줄일 수 있다. 반대로, 앞쪽 데이터만 Fetch 하다가 멈추는 프로그램이면 작게 설정해야 유리하다. 
 ### 10. 배치 I/O 활용
-배치 I/O는 읽는 블록마다 건건이 I/O Call을 발생시키는 비효율을 줄이기 위해 고안한 기능이다. 인덱스를 이용해 테이블을 액세스하다가 버퍼 캐시에서 블록을 찾지 못하면 일반적으로 디스크 블록을 바로 읽는데, 이 기능이 작동하면 테이블 블록에 대한 디스크 I/O Call을 미뤘다가 읽을 블록이 일정량 쌓이면 한꺼번에 처리한다. 
+배치 I/O는 읽는 블록마다 건건이 I/O Call을 발생시키는 비효율을 줄이기 위해 고안한 기능이다. 인덱스를 이용해 테이블을 액세스하다가 버퍼 캐시에서 블록을 찾지 못하면 일반적으로 디스크 블록을 바로 읽는데, 이 기능이 작동하면 ==테이블 블록에 대한 디스크 I/O Call을 미뤘다가 읽을 블록이 일정량 쌓이면 한꺼번에 처리한다. ==
 배치 I/O 기능이 작동하면 인덱스를 이용해서 출력하는 데이터 정렬 순서가 매번 다를 수 있다는 사실에 주목해야 한다. 
 ```sql
 SELECT /*+ batch_table_access_by_rowid(e) */ *
@@ -440,8 +445,475 @@ Rows  Row Source Operation
 	  테이블 액세스 과정에 읽는 블록 수 
 ```
 
+### 13. 튜닝해 보자
+인덱스가 ⌜인터넷매물 + 아파트시세코드 + 평형 + 평형타입⌟ 순으로 구성되어 있을때, 아래 SQL을 튜닝해보자 
+```sql
+SELECT 해당층, 평당가, 입력일, 해당동, ... 
+FROM 매물아파트매매
+WHERE 아파트시세코드='A01011350900056'
+AND 평형='59'
+AND 평형타입='A'
+AND 인터넷매물 between '1' and '3'
+ORDER BY 입력일 desc;
+
+-- 먼저 “후행 컬럼 등치조건이 아깝다”를 느껴야 한다..
+-- 1. BETWEEN을 IN-List로 전환한다.
+--    IN-List 개수만큼 UNION ALL 브랜치가 생성되고 각 브랜치마다 '=' 조건으로 검색한다.
+SELECT 해당층, 평당가, 입력일, 해당동, ... 
+FROM 매물아파트매매
+WHERE 아파트시세코드='A01011350900056'
+AND 평형='59'
+AND 평형타입='A'
+AND 인터넷매물 in('1', '2', '3')
+ORDER BY 입력일 desc;
+
+-- 2. 직접 SQL을 바꾸는게 부담된다면? INDEX SKIP SCAN 힌트를 사용한다. 
+--    선두컬럼이 BETWEEN 이라 나머지 조건을 만족하는 데이터들이 떨어져 있을 때 실제로 위력이 대단하다.
+SELECT /*+ INDEX_SS(매물아파트매매 (인터넷매물 아파트시세코드 평형 평형타입)) */ 
+-- 또는 /*+ INDEX_SS(테이블명 인덱스명) */
+해당층, 평당가, 입력일, 해당동, ... 
+FROM 매물아파트매매
+WHERE 아파트시세코드='A01011350900056'
+AND 평형='59'
+AND 평형타입='A'
+AND 인터넷매물 between '1' and '3'
+ORDER BY 입력일 desc;
+
+-- 3. 만약 인터넷매물 항목 개수가 많다면
+--    NL조인을 사용하자. 인터넷매물을 '=' 조건으로 조인할 수 있다. 
+--    * “작은 집합을 먼저 만들고 반복 탐색”이 떠오르면 NL조인
+select /*+ ordered use_nl(b) */ 
+b. 해당층, b. 평당가, b. 입력일 , b. 해당동, ...
+from 통합코드 a, 매물아파트매매 b
+and a. 코드구분 ='CD064' -- 인터넷매물구분
+and a. 코드 between '1' and '3'
+and b. 인터넷매물 = a. 코드
+and b. 아파트시세코드 = 'A01011350900056'
+and b. 평형 = '59'
+and b. 평형타입 ='A'
+order by b. 입력일 desc;
+```
+### 14.  BETWEEN은 다 IN-List로 바꾸는게 좋을까?
+아니다. IN-List 개수가 많으면 수직적 탐색 비용이 많이 발생한다. 그러면 BETWEEN 조건 때문에 리프 블록을 많이 스캔하는 비효율보다 IN-List 개수만큼 브랜치 블록을 반복 탐색하는 비효율이 더 클 수 있다. 루트에서 브랜치 블록까지 Depth가 깊을 때 특히 그렇다. 
+![[Pasted image 20260603150120.png|609]]
+또한, 조건절을 만족하는 레코드가 서로 멀리 떨어져 있을 때만 유용하다.  아래 좌측 그림에서 고객번호 = 123 조건을 만족하는 레코드는 두 건밖에 없다. 그런데 선두 컬럼 조건절이 BETWEEN이어서 고객번호 = 123 조건을 만족하는 레코드가 서로 멀리 떨어져 있다. 이 두 건을 찾으려면 인덱스 리프 블록을 많이 스캔해야 한다. 이럴 때 BETWEEN을 IN-List로 변환하면 효과가 크다. 반면 아래 우측 그림은 두 건이 가까이 있다. 이럴 땐 효과가 전혀 없거나 수직적 탐색 비용 때문에 오히려 블록 I/O가 더 많이 발생한다. 
+![[Pasted image 20260603150239.png|616]]
+수직적 탐색 비용을 따져보지 않고 무조건 BETWEEN을 IN-List로 변환하면 안된다. 항상 인덱스 스캔 비용을 따질 땐 블록을 몇 개 읽는지를 생각하자. 
+### 15. 그럼 IN 조건은 '=' 일까?
+IN 조건은 '='이 아니다. IN 조건이 '='이 되려면 IN-List Iterator 방식으로 풀려야만 한다. 그렇지 않으면 IN 조건은 필터조건이다. 그럼 과연 IN 조건을 '=' 조건으로 만들기 위해, 즉 액세스 조건으로 만들기 위해 IN-List Iterator 방식으로 푸는 것이 항상 효과적인가?
+인덱스가 『고객번호 + 상품ID』 순일 때, 아래 그림처럼 같은 고객번호는 상품ID 순으로 정렬된 상태로 같은 리프 블록에 저장된다. 여기서 만약 상품ID 조건절을 IN-List Iterator 방식으로 풀면, 인덱스를 수직적으로 세 번 탐색하는 과정에 아홉 개 블록을 읽는다.
+![[Pasted image 20260603154019.png]]
+상품ID 조건절을 IN-List Iterator 방식으로 풀지 않으면, 상품ID 조건절은 필터로 처리한다. 그러면 고객번호만 액세스 조건이므로 고객번호 = 1234인 레코드를 모두 스캔한다. 같은 고객은 한 블록(또는 연속된 두 블록)에 모여 있으므로 블록 I/O는 수직적 탐색 과정을 포함해 총 세 개(또는 네 개)만 발생한다. 
+이처럼 고객별 상품 데이터가 적다면 필터 방식이 오히려 나을 때도 있다. 
+### 16. IN-List를 액세스 조건 or 필터 조건 으로 유도하는 방법
+인덱스가 『고객번호 + 상품ID』 순일 때, 고객번호만 인덱스 액세스 조건으로 사용하려면 힌트를 쓰면 된다. 
+==num_index_keys 힌트의 세 번째 인자 '1'은 인덱스 첫 번째 컬럼까지만 액세스 조건으로 사용하라는 의미이다.==
+```sql
+select /*+num_index_keys(a 고객별가입상품_x1 1)*/
+from 고객별가입상품 a
+where 고객번호 = :cust_no
+and 상품ID in ('NH00037', 'NH00041', 'NH00050')
+
+Execution Plan  
+---------------------------------------------------------  
+0   SELECT STATEMENT Optimizer=ALL_ROWS  
+1 0   TABLE ACCESS (BY INDEX ROWID BATCHED) OF '고객별가입상품' (TABLE)  
+2 1     INDEX (RANGE SCAN) OF '고객별가입상품_X1' (INDEX)
+-- 참고로 두번째 열 0, 1 은 부모 ID
+
+Predicate information (identified by operation id):  
+---------------------------------------------------------  
+2 - access("고객번호" = TO_NUMBER(:CUST_NO))  
+2 - filter("상품ID"='NH00037' OR "상품ID"='NH00041' OR "상품ID"='NH00050' )
+```
+참고로 인덱스 컬럼을 `RTRIM(상품ID)`, `상품ID || ''` 처럼 가공해 버리는 것도 방법이다. 
+반대로 액세스 조건으로 사용하려면 인자로 2를 넣으면 된다.
+```sql
+select /*+num_index_keys(a 고객별가입상품_x1 2)*/
+from 고객별가입상품 a
+where 고객번호 = :cust_no
+and 상품ID in ('NH00037', 'NH00041', 'NH00050')
+
+Execution Plan  
+---------------------------------------------------------  
+0   SELECT STATEMENT Optimizer=ALL_ROWS  
+1 0   INLIST ITERATOR
+2 1     TABLE ACCESS (BY INDEX ROWID BATCHED) OF '고객별가입상품' (TABLE)  
+3 2       INDEX (RANGE SCAN) OF '고객별가입상품_X1' (INDEX)
+
+Predicate information (identified by operation id):  
+---------------------------------------------------------  
+3 - access("고객번호"= TO_NUMBER(:CUST_NO)) AND ("상품 ID"='NHO0037' OR "상품
+ID"='NH00041' OR 상품 ID"='NH00050'))
+```
+### 17. BETWEEN 과 like는 같을까?
+둘다 범위검색 조건으로서, 범위검색의 비효율 원리는 똑같이 적용된다. 하지만 데이터 분포와 조건절 값에 따라 인덱스 스캔량이 서로다를 수 있다. 
+
+```
+< 조건절 1 >
+where 판매월 BETWEEN '201901' and '201912'  
+and 판매구분 = 'B'
+
+< 조건절 2 >  
+where 판매월 LIKE '2019%'  
+and 판매구분 = 'B'
+
+< 조건절 3 >
+where 판매월 BETWEEN '201901' and '201912'
+and 판매구분 = 'A'
+
+< 조건절 4 >
+where 판매월 LIKE '2019%' 
+and 판매구분 = 'A'
+```
+![[Pasted image 20260603170150.png|694]]
+![[Pasted image 20260603165813.png|694]]
+사용자 입력과 선택에 따라 조건절이 다양하게 바뀔 때 SQL을 간편하게 작성하려고 조건절을 모두 `LIKE`로 구사한다거나, `BETWEEN '______' AND 'ZZZZZZ'` 로 범위조건을 남용해선 안된다. 
+### 18. "인덱스는 구성 컬럼이 전부 NULL인 row를 저장하지 않는다."
+오라클 B-Tree 인덱스는 기본적으로 인덱스 구성 컬럼이 전부 NULL인 row를 저장하지 않는다. 정렬할 키값도 비교할 키값도 없기 때문이다. 찾을 값으로 취급할 수도 없고 탐색 호용이 없다. 
+```sql
+SELECT * FROM 거래
+WHERE (:cust_id is null or 고객ID = :cust_id)
+AND 거래일자 BETWEEN :dt1 AND :dt2
+```
+```
+Execution Plan
+----------------------------------------------------------------
+0        SELECT STATEMENT Optimizer=ALL_ROWS
+1    0       FILTER
+2    1          TABLE ACCESS (BY INDEX ROWID) OF '거래' (TABLE)
+3    2             INDEX (RANGE SCAN) OF '거래_IDX3' (INDEX)
+----------------------------------------------------------------
+
+Predicate information (identified by operation id):
+----------------------------------------------------------------
+1 - filter(TO_DATE(:DT1) <= TO_DATE(:DT2)) 
+2 - filter(:CUST_ID IS NULL OR "고객ID" = TO_NUMBER(:CUST_ID))
+3 - access("거래일자" >= :DT1 AND "거래일자" <= :DT2)
+
+*참고로 filter(TO_DATE(:DT1) <= TO_DATE(:DT2)) 는 입력값 검사
+```
+위 sql에서 ⌜거래일자 + 고객ID⌟ 순으로 구성한 인덱스를 사용할 수 있다. 하지만, 고객ID를 테이블 액세스 단계에서 필터링한다. 랜덤 액세스한 후에 고객ID를 필터링한다는 뜻이다. 인덱스에 포함되지 않은 컬럼에 대한 옵션 조건은 어차피 테이블에서 필터링할 수밖에 없으므로 OR 조건을 활용한 옵션 조건 처리는 테이블 필터 조건으로만 사용 가능하다. 단, 인덱스에 Not Null 컬럼이 포함된 경우, 즉 모든 테이블 레코드가 인덱스에 저장돼 있음이 보장되는 경우, 18c 버전부터 OR 조건도 인덱스 필터로 처리되기 시작했다. 
+```sql
+SELECT * FROM 거래
+WHERE 고객ID = :cust_id
+AND (:cust_id = 'A' AND 거래일자 BETWEEN :dt1 AND :dt2)
+	OR
+	(:cust_id = 'B' AND 거래일자 BETWEEN :dt1 AND :dt2)
+```
+위와 같은 형태의 OR 조건절에는 OR-Expansion을 통해 인덱스 사용이 가능하다. 
+### 19. LIKE/BETWEEN 패턴 사용 시  점검해야 할 사항 
+1. 인덱스 선두 컬럼: 모든 데이터를 스캔하게 된다.
+2. NULL 허용 컬럼: 결과 집합에 오류가 생길 수 있다. 
+3. 숫자형 컬럼: 자동 형변환이 일어나므로 필터조건으로 사용된다. 
+4. 가변 길이 컬럼: 변수 값 길이가 다른 레코드도 조회될 수 있다.
+* BETWEEN은 1, 2 만 점검대상
+- `where 고객명 like :cust_nm` 처럼 '%'가 없으면 '=' 처럼 동작한다.
+### 20. 입력값 NULL or NOT NULL 처리방법
+1. UNION ALL 활용
+```sql
+SELECT * FROM SQLP.library
+WHERE :cust_name IS NOT NULL
+AND 저자 = :cust_name
+AND 등록번호 ...
+UNION ALL
+SELECT * FROM SQLP.library
+WHERE :cust_name IS NULL
+AND 등록번호 ...
+;
+```
+2. NVL/DECODE 함수활용
+	 코드는 UNION ALL 보다 단순하면서도 같은 성능을 낸다. 마찬가지로 NULL허용 컬럼에 사용할 수 없다. 
+	 
+OR Expansion 이 일어나 인덱스로 사용할 수 있도록 처리하는 것이 관건이다. 그러나, 옵션 조건 처리용 NVL/DECODE 함수를 여러 개 사용하면 그중 변별력이 가장 좋은 컬럼 기준으로 한 번만 OR Expansion 이 일어난다. 모든 옵션 조건을 이 방식으로 처리할 수 없다. 기대하지 말란 소리다.
+### 21. PL/SQL 사용자 정의 함수가 느린 이유?
+1. 가상머신(오라클 내부의 PL/SQL 실행환경) 상에서 실행되는 인터프리터 언어
+2. 호출 시마다 컨텍스트 스위칭 발생
+3. 내장 SQL에 대한 Recursive Call 발생
+오라클은 오라클 서버가 아닌 Oracle Forms, Oracle Reports 같은 제품에서도 수행될 수 있도록 PL/SQL을 설계하였다. 그래서 PL/SQL로 작성한 함수와 프로시저를 컴파일하면 JAVA언어처럼 바이트코드를 생성해서 데이터 딕셔너리에 저장하며, 이를 해석할 수 있는 PL/SQL 엔진만 있으면 어디서든 실행할 수 있다. PL/SQL엔진은 바이트코드를 런타임 시 해석하면서 실행한다. 
+PL/SQL 함수는 실행 시 매번 SQL 실행엔진과 PL/SQL 가상머신 사이에 컨텍스트 스위칭이 일어난다. 또한, 성능을 떨어트리는 가장 결정적이 요소는 Recursive Call이다. 만약 함수에 SQL이 내장되어 있으면 그 SQL도 100만 번 실행된다. 
+### 22. PL/SQL 호출을 어떻게 최소화 할까?
+```sql
+select /*+full(a) */ *
+from 회원 a
+where 암호화된_전화번호 = encryption(:phone_no)
+```
+encryption 함수를 만들었다. 위 sql에선 회원 테이블을 Full Scan 방식으로 읽으면 encryption 함수는 테이블 건수만큼 수행된다. 
+인덱스를 만들어보자. `create index 회원_X01 on 회원(생년, 암호화된_전화번호)`
+```sql
+select /*+ index(a 회원_x01) */ 회원번호, 회원명, 생년, 생월일, 등록일자
+from   회원 a
+where  생년 = '1987'
+and    암호화된_전화번호 = encryption(:phone_no)
+```
+
+```
+Execution Plan
+--------------------------------------------------------------
+0  SELECT STATEMENT Optimizer=ALL_ROWS (Cost=2 Card=1 Bytes=156)
+1    TABLE ACCESS (BY INDEX ROWID BATCHED) OF '회원' (TABLE) (Cost=2 ...)
+2      INDEX (RANGE SCAN) OF '회원_X03' (INDEX)(Cost=1 Card=1)
+--------------------------------------------------------------
+
+Predicate information
+--------------------------------------------------------------
+2 - access("생년"='1987' AND "암호화된_전화번호"="ENCRYPTION"(:PHONE_NO))
+```
+encryption 함수는 단 한 번 수행된다.
+### 23. 중복 인덱스 제거
+- 완전 중복: 인덱스 A의 선두 컬럼이 인덱스 B를 완전히 포함하는 경우 B 제거
+- 불완전 중복: 인덱스 A, B가 선두 컬럼은 같고 두 번째 컬럼만 다른 경우 평균 카디널리티가 매우 낮다면 사실상 중복이므로 제거
+
+
 # [4장] 조인 튜닝
 ---
+### 1. NL조인
+일반적으로 NL조인은 Outer와 Inner 양쪽 테이블 모두 인덱스를 활용한다. Outer 쪽 테이블은 사이즈가 크지 않으면 인덱스를 이용하지 않을 수 있다. Table Full Scan 하더라도 그것은 한 번에 그치기 때문이다. 반면, Inner 쪽 테이블은 인덱스를 사용해야 한다. Outer 루프에서 읽은 건수만큼 Table Full Scan을 반복하기 때문이다.
+###### - 실행 순서
+	1. Outer 인덱스에서 Outer의 조건절에 해당하는 첫 번째 인덱스를 찾는다.
+	2. 인덱스에서 읽은 ROWID로 Outer 테이블 레코드를 찾아간다.
+	3. Outer 테이블에서 읽은 레코드 중 조인 키값에 해당하는 데이터로 Inner 인덱스를 탐색한다.
+	4. 인덱스에서 읽은 ROWID로 Inner 테이블 레코드를 찾아간다.
+	5. Inner 인덱스에서 한 건 더 스캔하고, 조인 키값에 해당하는지 확인한다. 
+	6. 해당하면 인덱스에서 읽은 ROWID로 Inner 테이블 레코드를 찾아간다. 아니면 스캔을 멈춘다. 
+	7. Outer 인덱스에서 한 건 더 스캔하고, 조건절에 해당하는지 확인한다.
+	8. 해당하면 위 과정을 반복한다. 해당하지 않으면 스캔을 멈춘다. 
+<u>*INNER 인덱스는 조인 키값을 찾아갈때 사용. 인덱스에 없는 INNER의 다른 조건은 테이블 엑세스 후 필터링</u>
+###### - 실행 계획
+```
+Execution Plan
+--------------------------------------------------------------
+0    SELECT STATEMENT Optimizer=ALL_ROWS
+1  0   NESTED LOOPS
+2  1     TABLE ACCESS (BY INDEX ROWID) OF '사원' (TABLE)
+3  2       INDEX (RANGE SCAN) OF '사원_X1' (INDEX)
+4  1     TABLE ACCESS (BY INDEX ROWID) OF '고객' (TABLE)
+5  4       INDEX (RANGE SCAN) OF '고객_X1' (INDEX)
+```
+###### - 힌트
+```sql
+select /*+ ordered use_nl(c) */ -- ordered 는 from 절에 적은 순서대로 조인
+       e.사원명, c.고객명, c.전화번호
+from   사원 e, 고객 c
+where  e.입사일자 >= '19960101'
+and    c.관리사원번호 = e.사원번호
+```
 
+```sql
+select /*+leading(C, A, D, B) use_nl(A) use_nl(D) use_hash(B)*/ *
+-- C, A, D, B 순으로 조인하되 A, D와 조인할땐 nl, B와 조인할땐 해시 조인 해라
+from A,B,C,D
+where ...
+```
+###### - 특징
+첫 번째 특징은 랜덤 액세스 위주의 조인 방식이라는 점이다. 레코드 하나를 읽으려고 블록을 통째로 읽는 랜덤 액세스 방식은 설령 메모리 버퍼에서 빠르게 읽더라도 비효율이 존재한다. 인덱스 구성이 아무리 완벽해도 대량 데이터 조인할 때 NL 조인이 불리한 이유다.
+두 번째 특징은 한 레코드씩 순차적으로 진행한다는 점이다. 이 특징 덕에 아무리 큰 테이블을 조인하더라도 부분범위 처리가 가능하다면 매우 빠른 응답 속도를 낼 수 있다. 
+###### - 튜닝방법
+1. 인덱스로부터 읽은 블록에 비해 얻은 레코드 건수가 턱없이 적다면? 인덱스 수정
+```
+Rows  Row Source Operation
+----- ------------------------------------------
+    5  NESTED LOOPS (cr=112 pr=34 pw=0 time=122 us)
+    3   TABLE ACCESS BY INDEX ROWID OF 사원 (cr=105 pr=32 pw=0 time=118 us)
+    3    INDEX RANGE SCAN OF 사원_X1 (cr=102 pr=31 pw=0 time=16)
+    5   TABLE ACCESS BY INDEX ROWID OF 고객 (cr=7 pr=2 pw=0 time=4 us)
+    8    INDEX RANGE SCAN OF 고객_X1 (cr=5 pr=1 pw=0 time=0 us)
+```
+2. 조인 시도 횟수에 비해 결과집합이 턱없이 적다면? 조인 순서 바꾸기 고려
+```
+Rows  Row Source Operation
+----- ------------------------------------------
+    5  NESTED LOOPS (cr=2732 pr=386 pw=0 time=...)
+ 2780   TABLE ACCESS BY INDEX ROWID 사원 (cr=166 pr=2 pw=0 time=...)
+ 2780    INDEX RANGE SCAN 사원_X1 (cr=4 pr=0 pw=0 time=...)
+    5   TABLE ACCESS BY INDEX ROWID 고객 (cr=2566 pr=384 pw=0 time=...)
+    8    INDEX RANGE SCAN 고객_X1 (cr=2558 pr=383 pw=0 time=...)
+```
+3. 전부 소용이 없다면 소트 머지 조인과 해시 조인 고려
+4. ==추가로 정렬 기준 테이블은 아우터로 먼저 고려. (결과를 만드는 시작점이 되면 정렬 생략 가능할수도)==
+###### - 실행 계획 확장
+- 테이블 Prefech: 인덱스를 이용해 테이블을 엑세스하다가 디스크 I/O가 필요해지면, 이어서 곧 읽게 될 블록까지 미리 읽어서 버퍼캐시에 적재하는 기능
+- 배치 I/O: 디스크 I/O Call을 미뤘다가 읽을 블록이 일정량 쌓이면 한꺼번에 처리하는 기능
+```
+# 전통적인 실행계획
+------ -------------------------------
+|   0 | SELECT STATEMENT                      
+|   1 |   NESTED LOOPS                        
+|   2 |    TABLE ACCESS BY INDEX ROWID 
+|*  3 |     INDEX RANGE SCAN                  
+|*  4 |    TABLE ACCESS BY INDEX ROWID 
+|   5 |     INDEX RANGE SCAN                  
 
+# 테이블 Prefetch 실행계획
+------ -------------------------------
+5     | TABLE ACCESS BY INDEX ROWID OF 고객
+12    |   NESTED LOOPS
+3     |     TABLE ACCESS BY INDEX ROWID OF 사원
+3     |       INDEX RANGE SCAN OF 사원_X1
+8     |     INDEX RANGE SCAN OF 고객_X1
 
+Outer row 읽음
+→ Inner 인덱스 탐색해서 ROWID 찾음
+→ Inner 테이블 블록을 미리 읽어둠(prefetch)
+→ 나중에 테이블 액세스
+*prefetch 명령은 실행계획에서 볼수 없다. ROWID를 얻으면 Inner 테이블을 미리 버퍼에 올려두고, 테이블 액세스는 나중에 한번 진행한다. TABLE ACCESS BY INDEX ROWID 가 최상단 부모로 있는 구조로 확인한다. 주문을 미리 받아 여러가지 음식을 미리 시켜놓고 나중에 한번에 먹는격.
+
+관련 힌트는
+/*+ nlj_prefetch(고객) */  
+/*+ no_nlj_prefetch(고객) */
+
+# 배치 I/O 실행계획
+------ -------------------------------
+5     | NESTED LOOPS
+8     |   NESTED LOOPS
+3     |     TABLE ACCESS BY INDEX ROWID OF 사원
+3     |       INDEX RANGE SCAN OF 사원_X1
+8     |     INDEX RANGE SCAN OF 고객_X1
+5     |   TABLE ACCESS BY INDEX ROWID OF 고객
+
+Outer row 여러 건 처리  
+→ Inner 인덱스에서 ROWID 여러 개 모음  
+→ ROWID를 블록 기준으로 정리  
+→ Inner 테이블을 배치로 읽음
+* 배치 I/O는 ROWID를 모은 뒤, 테이블 블록을 읽기 좋은 순서로 재배열할 수 있기 때문에 정렬 순서를 보장하지 않는다. 
+관련 힌트는
+/*+ nlj_batching(고객) */  
+/*+ no_nlj_batching(고객) */
+```
+###### - NL 조인 자가 진단 
+```
+Q: 개발팀에서 아래와 같은 인덱스 생성을 요청했다.
+
+PRA_HST_STC_N1
+= SALE_ORG_ID + STRD_GRP_ID + STRD_ID + STC_DT
+
+관련 SQL은 다음과 같다.
+
+SELECT *
+FROM PRA_HST_STC a, ODM_TRMS b
+WHERE a.SALE_ORG_ID = :sale_org_id
+AND   a.STRD_GRP_ID = b.STRD_GRP_ID
+AND   a.STRD_ID     = b.STRD_ID
+ORDER BY a.STC_DT DESC;
+
+왜 잘못 신청한 인덱스인지, 어떻게 재구성해야 하는지 답해보자.
+```
+
+```
+A:
+이 SQL에서 NL 조인을 고려하면 a 테이블이 Outer, b 테이블이 Inner가 되는 구조가 자연스럽다.
+근거는 a 테이블에만 상수 조건이 있고,
+a.SALE_ORG_ID = :sale_org_id
+정렬 기준도 a 테이블 컬럼이기 때문이다.
+ORDER BY a.STC_DT DESC
+
+따라서 a 테이블은 SALE_ORG_ID 조건으로 먼저 읽고, STC_DT DESC 순서로 읽어 정렬을 생략하는 방향이 좋다.
+
+반면 STRD_GRP_ID, STRD_ID는 a 테이블을 찾기 위한 조건이 아니라, a에서 읽은 값을 가지고 b 테이블을 반복 탐색할 때 사용하는 조인 키다.
+그러므로 이 컬럼들은 a 쪽 인덱스 중간에 두기보다는 b 쪽 인덱스에 두는 것이 NL 조인 관점에서 더 적절하다.
+
+재구성 예시는 다음과 같다.
+1. Outer 테이블 a용 인덱스
+PRA_HST_STC_N1 = SALE_ORG_ID + STC_DT
+
+또는 조인 컬럼까지 인덱스에서 바로 얻고 싶다면
+PRA_HST_STC_N1 = SALE_ORG_ID + STC_DT + STRD_GRP_ID + STRD_ID
+
+2. Inner 테이블 b용 인덱스
+ODM_TRMS_N1 = STRD_GRP_ID + STRD_ID
+
+원하는 실행 흐름은 다음과 같다.
+1. a 테이블에서 SALE_ORG_ID 조건으로 대상 범위를 찾는다.
+2. STC_DT DESC 순서로 읽어 ORDER BY 정렬을 생략한다.
+3. a에서 나온 STRD_GRP_ID, STRD_ID 값으로 b 테이블을 NL 조인 방식으로 반복 탐색한다.
+4. 이때 b 테이블에는 STRD_GRP_ID + STRD_ID 인덱스가 있어야 효율적으로 탐색할 수 있다.
+
+결론적으로 개발팀이 요청한
+SALE_ORG_ID + STRD_GRP_ID + STRD_ID + STC_DT
+인덱스는 ORDER BY a.STC_DT DESC를 제대로 활용하기 어렵고, NL 조인 관점에서도 조인 컬럼의 위치가 어색하다.
+
+더 적절한 구성은
+a: SALE_ORG_ID + STC_DT
+b: STRD_GRP_ID + STRD_ID
+이다.
+```
+# [부록] 실행계획
+---
+### 0. BASIC
+자식 노드가 부모 노드에 데이터를 넘긴다. 들여쓰기가 깊은 쪽이 먼저 실행된다. 같은 들여쓰기면 보통 위쪽이 드리이빙이다.
+### 1. FILTER
+실행계획에서 `FILTER`는 해당할때만 자식들이 실행된다고 보면된다.
+```sql
+SELECT * FROM SQLP.library 
+WHERE :cust_name IS NULL 
+AND 등록번호 IN ('EM9665', 'EM17033', 'CEM97491') 
+UNION ALL 
+SELECT * FROM SQLP.library 
+WHERE :cust_name IS NOT NULL 
+AND 저자 = :cust_name 
+AND 등록번호 IN ('CEM97499', 'CEM97494', 'EM19275');
+```
+```
+-------------------------------------------------------------------------------
+| Id  | Operation           | Name    | Rows  | Bytes | Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |         |     9 |  6318 |   410   (1)| 00:00:01 |
+|   1 |  UNION-ALL          |         |       |       |            |          |
+|*  2 |   FILTER            |         |       |       |            |          |
+|*  3 |    TABLE ACCESS FULL| LIBRARY |    17 | 11934 |   410   (1)| 00:00:01 |
+|*  4 |   TABLE ACCESS FULL | LIBRARY |     8 |  5616 |   410   (1)| 00:00:01 |
+-------------------------------------------------------------------------------
+
+조건 검사  
+→ 조건이 TRUE면 자식 실행  
+→ 조건이 FALSE면 자식 실행 안 함
+```
+### 2. NESTED LOOPS
+실행계획에서 `NESTED LOOPS`는 **바깥쪽 결과 한 건마다 안쪽을 반복 탐색**한다는 뜻이므로,
+3번에서 나온 결과 한 건마다 5번 인덱스를 탐색한다는 뜻이다. 
+서로다른 결과집합 A와 B를 연결할 때만 사용된다. 말그대로 NL 조인이다.
+```sql
+CREATE INDEX 상품_X01 ON SQLP.상품(상품번호, 상품분류);
+CREATE INDEX 거래_x01 ON SQLP.거래(거래구분코드, 상품번호, 거래일자);
+  
+SELECT /*+leading(a) use_nl(b)*/
+b.상품코드, b.상품명, a.고객번호, a.거래일자, a.거래량, a.거래금액
+FROM SQLP.거래 a, SQLP.상품 b
+WHERE a.거래구분코드 ='AC'
+AND a.거래일자 BETWEEN '20090101' AND '20091031'
+AND b.상품번호 = a.상품번호
+AND b.상품분류 = '가전';
+```
+```
+--------------------------------------------------------
+| Id  | Operation                             | Name   |
+--------------------------------------------------------
+|   0 | SELECT STATEMENT                      |        |
+|   1 |  NESTED LOOPS                         |        |
+|   2 |   NESTED LOOPS                        |        |
+|   3 |    TABLE ACCESS BY INDEX ROWID BATCHED| 거래    |   
+|*  4 |     INDEX RANGE SCAN                  | 거래_X0 | 
+|*  5 |    INDEX RANGE SCAN                   | 상품_X0 | 
+|   6 |   TABLE ACCESS BY INDEX ROWID         | 상품    |    
+--------------------------------------------------------
+
+Predicate Information (identified by operation id):
+---------------------------------------------------                              4 - access("A"."거래구분코드"='AC' AND "A"."거래일자">=20090101 AND "A"."거래일자"<=20091031)  
+    filter("A"."거래일자">=20090101 AND "A"."거래일자"<=20091031)                    
+5 - access("B"."상품번호"="A"."상품번호" AND "B"."상품분류"='가전')                      
+```
+
+```
+## 전통적인 NL 조인의 실행계획 참고용
+|   0 | SELECT STATEMENT                      |        |
+|   1 |   NESTED LOOPS                        |        |
+|   2 |    TABLE ACCESS BY INDEX ROWID BATCHED| 거래    |   
+|*  3 |     INDEX RANGE SCAN                  | 거래_X0 | 
+|*  4 |    TABLE ACCESS BY INDEX ROWID BATCHED| 상품    | 
+|   5 |     INDEX RANGE SCAN                  | 상품_X0 | 
+```
+### 3. Row Source Operation
+cr: 블록 요청 횟수
+pr: 디스크에서 읽은 블록 수
+pw: 디스크에 쓴 블록 수
+==읽은 블록은 cr 보면 된다.  한 블록에 평균 500개 레코드가 저장되어 있다고 보고 비효율을 확인하자.==
