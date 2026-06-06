@@ -176,7 +176,7 @@ Rows      Row Source Operation
     INDEX RANGE SCAN 장비_N1
 ```
 
-이며 같은 뎁스처럼 보이고 위에 있어도, "`SORT AGGREGATEINDEX RANGE SCAN 상태변경이력_PK`
+이며 같은 뎁스처럼 보이고 위에 있어도, "`SORT AGGREGATE INDEX RANGE SCAN 상태변경이력_PK`
 가 메인쿼리보다 먼저 독립 실행된다"는 뜻이 아니라, <u>메인쿼리 각 로우마다 호출되는 서브쿼리 실행계획 조각</u>이라고 분리해서 봐야한다. 실행계획 조각 이라는건 실행계획만 단독으로는 알 수 없고 SQL 원문이랑 같이 봐야 한다.
 
 ### 8. 조건절 정보(Predicate information) 뜯어 보자
