@@ -1324,7 +1324,7 @@ select * FORM 사원 e,
 	LATERAL (select * from 조직 where 조직코드 = e.조직코드)
 ```
 ### 17. 스칼라 서브쿼리 반복실행
-함수를 사용하면 메인쿼리 건수만큼 '재귀적으로' 반복 실행한다. 단, 스칼라 서브쿼리는 함수와 다르게 컨텍스트 스위칭 없이 메인쿼리와 서브쿼리를 한 몸체처럼 실행한다. 아래 SQL은 Outer 조인문처럼 NL 조인 방식으로 실행된다. (조인에 실패하는 레코드는 DNAME에 NULL 값을 출력한다는 점도 같다. )
+함수를 사용하면 메인쿼리 건수만큼 '재귀적으로' 반복 실행한다. 단, 스칼라 서브쿼리는 함수와 다르게 컨텍스트 스위칭 없이 메인쿼리와 서브쿼리를 한 몸체처럼 실행한다. 아래 SQL은 Outer 조인문처럼 NL 조인 방식으로 실행된다. (조인에 실패하는 레코드는 DNAME에 NULL 값을 출력한다는 점도 같다. ) <mark>스칼라 서브쿼리는 NL 방식으로 조인한다. </mark>
 ```sql
 select empno, ename, sal, hiredate
 , (select d.dname from dept d where d.deptno = e.deptno) as dname 
@@ -1342,7 +1342,112 @@ where sal >= 2000
 위처럼 사용자 정의 함수에 스칼라 서브쿼리를 덧씌우면 캐싱 효과를 누릴 수 있다. 좋은 튜닝 기법이다.  
 단, 캐시 공간은 늘 부족하다. 스칼라 서브쿼리 캐싱 효과는 입력 값의 종류가 소수여서 해시 충돌 가능성이 작을 때 효과가 있다. 반대의 경우라면 캐시를 매번 확인하는 비용 때문에 오히려 성능이 나빠지고 CPU 사용률만 높게 만든다. 메모리도 더 사용한다.  
 메인 쿼리 집합이 매우 작은 경우에도 성능에 도움을 주지 못한다. 캐시 재사용성이 낮아지기 때문이다. 
+### 19. 스칼라 서브쿼리서 두개 이상의 값을 반환하고 싶다면?
+스칼라 서브쿼리에는 치명적인 제약이 하나 있다. 두 개 잇아의 값을 반환할 수 없다는 제약이다. 즉, 쿼리를 아래와 같이 작성할 수 없다. 
+```sql
+select c.고객번호, c.고객명
+, (select avg(거래금액), min(거래금액), max(거래금액)
+   from 거래
+   where 거래일시 >= trunc(sysdate, 'mm')
+   and 고객번호 = c.고객번호)
+from 고객 c
+where c.가입일시 >= trunc(add_months(sysdate, -1),'mm')
+```
+그렇다고 쿼리를 아래와 같이 작성하면, 거래 테이블에서 같은 데이터를 반복해서 읽는 비효율이 있다. 
+```sql
+select c.고객번호, c.고객명
+	  ,(select avg(거래금액) from 거래
+	    where 거래일시 >= trunc(sysdate, 'mm') and 고객번호 = c.고객번호)
+	  ,(select min(거래금액) from 거래
+	    where 거래일시 >= trunc(sysdate, 'mm') and 고객번호 = c.고객번호)
+	  ,(select max(거래금액) from 거래
+	    where 거래일시 >= trunc(sysdate, 'mm') and 고객번호 = c.고객번호)
+from 고객 c
+where c.가입일시 >= trunc(add_months(sysdate, -1), 'mm')
+```
+이럴 때 SQL 튜너들이 사용하는 방식은 아래처럼 구하려는 값들을 문자열로 결합하고, 밖에서 분리하는 방식이다. 
+```sql
+select 고객번호, 고객명
+     , to_number(substr(거래금액, 1, 10))  평균거래금액
+     , to_number(substr(거래금액, 11, 10)) 최소거래금액
+     , to_number(substr(거래금액, 21))     최대거래금액
+from (
+    select c.고객번호, c.고객명
+         , (select lpad(avg(거래금액), 10)
+                || lpad(min(거래금액), 10)
+                || max(거래금액)
+            from   거래
+            where  거래일시 >= trunc(sysdate, 'mm')
+            and    고객번호 = c.고객번호) 거래금액
+    from   고객 c
+    where  c.가입일시 >= trunc(add_months(sysdate, -1), 'mm')
+)
+```
+또는 아래 오브젝트 타입을 사용한다. 물론 이런저런 고민 없이 인라인 뷰를 사용하면 편하지만 부분범위 처리가 안 되는 문제가 있다. 물론 이젠 Pushdown 이 잘 작동하므로 인라인 뷰를 마음 편히 사용할 수 있게 됐다. 
+### 20. 오브젝트 TYPE
+구조체나 클래스와 흡사한 개념이다. 오브젝트 타입을 사용하면 위 예시를 아래와 같이 바꿀 수 있다.
+```sql
+-- 1) 오브젝트 타입 생성
+CREATE TYPE 거래통계_T AS OBJECT (
+    평균거래 NUMBER,
+    최소거래 NUMBER,
+    최대거래 NUMBER
+);
 
+-- 2) 스칼라 서브쿼리 1개로 줄이기
+SELECT c.고객번호,
+       c.고객명,
+       t.거래통계.평균거래 AS 평균거래,
+       t.거래통계.최소거래 AS 최소거래,
+       t.거래통계.최대거래 AS 최대거래
+FROM (
+    SELECT c.고객번호,
+           c.고객명,
+           (
+               SELECT 거래통계_T(
+                          AVG(거래금액),
+                          MIN(거래금액),
+                          MAX(거래금액)
+                      )
+               FROM 거래
+               WHERE 거래일시 >= TRUNC(SYSDATE, 'MM')
+               AND   고객번호 = c.고객번호
+           ) AS 거래통계
+    FROM 고객 c
+    WHERE c.가입일시 >= TRUNC(ADD_MONTHS(SYSDATE, -1), 'MM')
+) t;
+```
+### 21. 스칼라 서브쿼리 Unnesting
+스칼라 서브쿼리는 NL방식으로 조인한다고 했다. 캐싱 효과가 크지 않으면 랜덤 I/O 부담이 있다. 따라서 다른 종인 방식을 사용하기 위해 스칼라 서브쿼리를 일반 조인문으로 변환하고 싶을 때가 있다. 특히, 대량 데이터를 처리하는 병렬 쿼리에선 해시 조인으로 처리해야 효과적일 때가 많다. 스칼라 서브쿼리도 Unnesting 할 수 있다.  
+```sql
+select c.고객번호, c.고객명
+      ,(select /*+ unnest */ round(avg(거래금액), 2) 평균거래금액
+        from   거래
+        where  거래일시 >= trunc(sysdate, 'mm')
+        and    고객번호 = c.고객번호)
+from   고객 c
+where  c.가입일시 >= trunc(add_months(sysdate, -1), 'mm')
+```
+```
+Execution Plan
+------------------------------------------------------------
+0      SELECT STATEMENT Optimizer=ALL_ROWS (Cost=7 Card=4 Bytes=184)
+1   0    HASH JOIN (OUTER) (Cost=7 Card=4 Bytes=184)
+2   1      TABLE ACCESS (FULL) OF '고객' (TABLE) (Cost=3 Card=4 Bytes=80)
+3   1      VIEW OF 'SYS.VW_SSQ_1' (VIEW) (Cost=4 Card=3 Bytes=78)
+4   3        HASH (GROUP BY) (Cost=4 Card=3 Bytes=21)
+5   4          TABLE ACCESS (FULL) OF '거래' (TABLE) (Cost=3 Card=14 Bytes=98)
+```
+아래는 `unnest`와 `merge` 힌트를 같이 사용했을 때의 실행계획이다.
+```
+Execution Plan
+------------------------------------------------------------
+0      SELECT STATEMENT Optimizer=ALL_ROWS (Cost=7 Card=15 Bytes=405)
+1   0    HASH (GROUP BY) (Cost=7 Card=15 Bytes=405)
+2   1      HASH JOIN (OUTER) (Cost=6 Card=15 Bytes=405)
+3   2        TABLE ACCESS (FULL) OF '고객' (TABLE) (Cost=3 Card=4 Bytes=80)
+4   2        TABLE ACCESS (FULL) OF '거래' (TABLE) (Cost=3 Card=14 Bytes=98)
+```
 
 # [부록] 실행계획
 
