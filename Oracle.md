@@ -116,7 +116,9 @@ OR 조건은 OR Expansion 으로, IN 조건절은 IN-List Iterator 방식으로 
 ### 5. 인덱스 컬럼을 가공하지 않았는데 인덱스를 안탈수도 있다. 왜?
 우선 '인덱스를 탄다'는 표현은 '인덱스를 Range Scan한다'와 같은 의미인 셈이다. 인덱스 Range Scan에는 더 중요한 선행조건이 있다. <u>인덱스 선두 컬럼이 조건절에 있어야 한다</u>는 사실이다. 가공하지 않은 상태로 말이다. 인덱스의 두번째, 세번째 컬럼이 가공되어도 인덱스 선두 컬럼이 가공되지 않은 상태로 조건절에 있다면 인덱스 Range Scan은 무조건 가능하다. Range Scan은 시작점을 찾는 수직적 탐색이라는 것을 기억하자.
 
-### 6. 인덱스를 이용해 최대, 최소값을 구할때의 실행계획
+### 6. 인덱스를 이용해 최대 최소값을 구할때의 실행계획
+전체 데이터를 읽지 않고 인덱스를 이용해 최대 또는 최소값을 구하려면, 조건절 컬럼과 MIN/MAX 함수 인자 컬럼이 모두 인덱스에 포함돼 있어야 한다. 즉, 테이블 액세스가 발생하지 않아야 한다. 
+(`FIRST ROW`는 조건을 만족하는 레코드 하나를 찾았을 때 바로 멈춘다는 것을 의미한다. )
 ```sql
 STATEMENT
   SORT AGGREGATE (cr=6 pr=0 pw=0 time=81 us) --SORT AGGREGATE: 집계함수결과 생성단계
@@ -618,9 +620,9 @@ AND 거래일자 BETWEEN :dt1 AND :dt2
 Execution Plan
 ----------------------------------------------------------------
 0        SELECT STATEMENT Optimizer=ALL_ROWS
-1    0       FILTER
-2    1          TABLE ACCESS (BY INDEX ROWID) OF '거래' (TABLE)
-3    2             INDEX (RANGE SCAN) OF '거래_IDX3' (INDEX)
+1    0     FILTER
+2    1      TABLE ACCESS (BY INDEX ROWID) OF '거래' (TABLE)
+3    2       INDEX (RANGE SCAN) OF '거래_IDX3' (INDEX)
 ----------------------------------------------------------------
 
 Predicate information (identified by operation id):
@@ -904,10 +906,9 @@ b: STRD_GRP_ID + STRD_ID
 오라클 서버 프로세스는 SGA에 공유된 데이터를 읽고 쓰면서, 동시에 자신만의 고유 메모리 영역을 갖는다. 각 오라클 서버 프로세스에 할당된 메모리 영역을 PGA(Process/Program/Private Global Area)라고 부르며, 프로세스에 종속적인 고유 데이터를 저장하는 용도로 사용한다. PGA 공간이 작아 데이터를 모두 저장할 수 없을 때는 Temp 테이블스페이스를 이용한다.
 PGA는 독립적인 메모리 공간이므로 래피 매커니즘이 불필요하다. 따라서 SGA 버퍼캐시에서 읽을 때보다 훨씬 빠르다.
 ![](image/Pasted%20image%2020260604204423.png)
-
+ 
 ### 3. 소트 머지 조인
 조인 컬럼에 인덱스가 없을 때, 대량 데이터 조인이어서 인덱스가 효과적이지 않을 때 고려한다. 두 단계로 진행한다.
-
 - 소트 단계: 양쪽 집합을 조인 컬럼 기준으로 정렬한다.
 - 머지 단계: 정렬한 양쪽 집합을 서로 머지(Merge)한다.
 
@@ -1365,7 +1366,7 @@ select c.고객번호, c.고객명
 from 고객 c
 where c.가입일시 >= trunc(add_months(sysdate, -1), 'mm')
 ```
-이럴 때 SQL 튜너들이 사용하는 방식은 아래처럼 구하려는 값들을 문자열로 결합하고, 밖에서 분리하는 방식이다. 
+이럴 때 SQL 튜너들이 사용하는 방식은 아래처럼 구하려는 값들을 문자열로 결합하고, 밖에서 분리하는 방식이다. ( 그러나 이 방식은 First Row Stopkey 알고리즘이 작동하지 않는다는 사실 [참고](#8-first-row-stopkey-알고리즘))
 ```sql
 select 고객번호, 고객명
      , to_number(substr(거래금액, 1, 10))  평균거래금액
@@ -1448,12 +1449,281 @@ Execution Plan
 3   2        TABLE ACCESS (FULL) OF '고객' (TABLE) (Cost=3 Card=4 Bytes=80)
 4   2        TABLE ACCESS (FULL) OF '거래' (TABLE) (Cost=3 Card=14 Bytes=98)
 ```
+# [5장] 소트 튜닝
+### 1. 소트 수행 과정
+소트는 PGA에 할당한 Sort Area에서 이루어진다. 메모리 공간인 Sort Area가 다 차면, 정렬된 중간집합을 Temp 테이블스페이스에 임시 세그먼트를 만들어 저장한다. Sort Area가 찰 때마다 Temp 영역에 저장해 둔 중간 단계의 집합을 'Sort Run'이라고 부른다. 정렬된 최종 결과집합을 얻으려면 이를 다시 Merge 해야 한다. 각 Sort Run 내에서는 이미 정렬되어 있다. 각각에서 가장 작은 값부터 PGA로 읽어 들이다가 PGA가 찰 때마다 쿼리 수행 다음 단계나 클라이언트로 전달하면 된다.   
+Sort Area 에서 작업을 완료할 수 있는지에 따라 소트를 두 가지 유형으로 나눈다. 
+- 메모리 소트(In-Memory Sort): 정렬 작업을 메모리 내에서 완료. <mark>Internal Sort</mark>
+- 디스크 소트(To-Disk Sort): 디스크 공간까지 사용. <mark>External Sort</mark>
+소트 연산은 메모리 집약적이며, CPU 집약적이다. 많은 서버 리소스를 사용하고 디스크 I/O가 발생하는 것도 문제지만, 부분범위 처리를 불가능하게 함으로써 OLTP 환경에서 애플리케이션 성능을 저하시키는것 또한 문제다. 될 수 있으면 소트가 발생하지 않도록 SQL을 작성해야 하고, 소트가 불가피하다면 메모리 내에서 완료되도록 해야한다. 
+### 2. 소트를 발생시키는 오퍼레이션
+1. Sort Aggregate
+Sort Aggregate는 집계를 수행할 때 나타난다. 실제로 정렬하진 않는다. <mark>Sort Area를 사용한다는 의미로 이해하면 된다.</mark> SUM, MAX, MIN, COUNT 는 테이블에서 값을 하나씩 읽어가면서 업데이트 한다. 
+2. Sort Order By
+3. Sort Group By
+![](image/Pasted%20image%2020260608052007.png)
+4. Hash Group By
+읽는 레코드마다 Group By 컬럼의 해시 값으로 해시 버킷을 찾아 그룹별로 집계항목을 갱신하는 방식이다. 정렬 순서가 보장되지 않는다. **정렬된 결과를 얻고싶다면 반드시 Order By를 명시해야 한다. **
+5. Sort Unique
+Unnesting 된 서브쿼리가 M쪽 집합이거나, 1쪽 집합이더라도 조인 컬럼에 Unique 인덱스가 없으면, 메인 쿼리와 조인하기 전에 중복 레코드부터 제거해야 한다. 이때 정렬하여 같은 값끼리 붙여 중복을 하나만 남기는 Sort Unique 오퍼레이션이 나타난다. Union, Minus, Intersect 같은 집합 연산자를 사용할 때나 Distinct 연산자를 사용해도 Sort Unique 오퍼레이션이 나타난다. 
+6. Hash Unique
+Order By 를 생략할 경우 Distinct 방식에 Hash Unique 방식도 나타난다. 
+7. Sort Join
+소트 머지 조인 수행 시 나타난다. 
+8. Window Sort
+윈도우 함수 수행 시 나타난다. 
+### 3. 소트가 발생하지 않도록 SQL을 작성하려면?
+1. 집합이 상호배타적일 경우, Union 보다 가능하면 Union All을 사용한다. 집합 사이에 인스턴스 중복 가능성이 있을 경우, 조건절을 활용해 중복이 없게 만들 수 있다. 
+2. 실행계획에 HASH(UNIQUE)가 들어가는 Distinct, Minus 대신 Exists 를 사용하자. Exists 서브쿼리는 데이터 존재 여부만 확인하면 되기 때문에 조건절을 만족하는 데이터를 모두 읽지 않는다. 
+3. 인덱스를 이용해 소트 연산을 생략할 수 있는 상황이지만, 해시 조인 중이라면 NL조인이나 (정렬 기준이 조인 키 컬럼이면)소트 머지 조인으로 변경해보자. 
+4. 가능하다면 인덱스 구성을 변경하여 소트 연산을 생략하고 부분범위 처리를 가능하게 하여 성능 개선 효과를 얻어보자.
+### 4. 3-Tier 환경에서도 부분범위 처리가 의미있을까?
+부분범위 처리는 쿼리 수행 결과 중 앞쪽 일부를 우선 전송하고 멈추었다가 클라이언트가 추가 전송을 요청(Fetch call)할 때마다 남은 데이터를 조금씩 나눠 전송하는 방식을 말한다. 2-Tier 환경에서는 이를 이용한 튜닝 기법을 많이 활용했다. 클라이언트와 DB 서버 사이에 WAS, AP 서버 등이 존재하는 3-Tier 아키텍처는 서버 리소스를 수많은 클라이언트가 공유하는 구조이므로 클라이언트가 특정 DB 커넥션을 독점할 수 없다. 단위 작업을 마치면 DB 커넥션을 바로 커넥션 풀에 반환해야 하므로 그전에 쿼리 조회 결과를 클라이언트에게 모두 전송하고 커서(Cursor)를 닫아야만 한다. 따라서 쿼리 결과 집합을 조금씩 나눠서 전송하는 방식을 사용할 수 없다. 
+부분범위 처리 활용은 첫째, 결과집합 출력을 바로 시작할 수 있느냐 둘째, 앞쪽 일부만 출력하고 멈출 수 있느냐가 핵심이므로 3-Tier 환경에서 의미 없다고 생각할 만 하다. 하지만, 여전히 유효하다 <mark>Top N 쿼리</mark> 때문이다.  
+### 5. `Top N Stopkey` 알고리즘
+Top N 쿼리는 전체 결과집합 중 상위 N개 레코드만 선택하는 쿼리다. 
+SQL Server나 Sybase는 `select Top 10 거래일시, 체결건수, 체결수량 ... ` DB2는 `FETCH FIRST 10 ROWS ONLY` 오라클에서는 `select * from ( ... ) where rownum <= 10` 으로 작성한다. 
+얼핏 보기엔 중간집합을 만들어야 하므로 부분범위 처리가 불가능해 보이지만, 조건절에 들어가는 컬럼을 인덱스로 구성해준다면 옵티마이저는 소트 연산을 생략하며, N개를 읽는 순간 바로 멈춘다. 아래 TOP N의 실행계획을 보면, `Sort Order By`는 없고 `COUNT (STOPKEY)`가 있다. 이 기능을 `Top N Stopkey`알고리즘이라 부르자. 이를 이용하여 <mark>페이징 처리</mark>를 진행하자 !
+```
+Execution Plan
+----------------------------------------------------------------
+SELECT STATEMENT Optimizer=ALL_ROWS
+  COUNT (STOPKEY)
+    VIEW
+      TABLE ACCESS (BY INDEX ROWID) OF '종목거래' (TABLE)
+        INDEX (RANGE SCAN) OF '종목거래_PK' (INDEX (UNIQUE))
+```
+### 6. 페이징 처리를 위해
+1. 부분범위 처리 가능하도록 SQL을 작성한다. 
+   \* `부분범위 처리 가능하도록 SQL을 작성한다`는 인덱스 사용 가능하도록 조건절을 구사하고, 조인은 NL 조인 위주로 처리하고, Order by 절이 있어도 소트 연산을 생략할 수 있도록 인덱스를 구성해주는 것
+2. 작성한 SQL문을 페이징 처리용 표준 패턴 SQL Body 에 넣는다. (SQL Body  는 아래 참고)
+```sql
+select * 
+from(
+	select rownum no, a.*
+	from (/*SQL BODY*/) a
+	where rownum <= (:page * 10)
+)
+where no >= (:page-1)*10+1
+```
+__이건 왜 안되나요?__
+```sql
+select * 
+from(
+	select rownum no, a.*
+	from (/*SQL BODY*/) a
+)
+where no between (:page-1)*10+1 and (:page*10)
+```
+이렇게 작성하면 실행계획에 `COUNT (STOPKEY)`가 아닌 `COUNT` 만 존재하게 된다. 전체범위를 처리한단 말.
+### 7. 튜닝해보자
+```sql 
+-- Q1:
+select DISTINCT p.상품번호, p.상품명, p.상품가격 ...
+from 상품 p, 계약 c
+where p.상품유형코드 = :pclscd
+and c.상품번호 = p.상품번호
+and c.계약일자 between :dt1 and :dt2
+and c.계약구분코드 =:ctpcd
+```
 
+```sql 
+--A1:
+select p.상품번호, p.상품명, p.상품가격, ...
+from 상품 p
+where p.상품유형코드 = :pclscd
+and EXISTS (select 'x' from 계약 c
+			where c.상품번호 = p.상품번호
+			and c.계약일자 between :dt1 and :dt2
+			and c.계약구분코드 = :ctpcd)
+```
+
+```sql
+-- Q2:
+SELECT ST.상황접수번호, ST.관제일련번호, ST.상황코드, ST.관제일시
+  FROM 관제진행상황 ST
+ WHERE 상황코드 = '0001'  -- 신고접수
+   AND 관제일시 BETWEEN :V_TIMEFROM || '000000'
+                   AND :V_TIMETO   || '235959'
+MINUS
+SELECT ST.상황접수번호, ST.관제일련번호, ST.상황코드, ST.관제일시
+  FROM 관제진행상황 ST, 구조활동 RPT
+ WHERE 상황코드 = '0001'
+   AND 관제일시 BETWEEN :V_TIMEFROM || '000000'
+                   AND :V_TIMETO   || '235959'
+   AND RPT.출동센터ID = :V_CNTR_ID
+   AND ST.상황접수번호 = RPT.상황접수번호
+ORDER BY 상황접수번호, 관제일시;
+```
+
+```sql
+-- A2:
+SELECT ST.상황접수번호, ST.관제일련번호, ST.상황코드, ST.관제일시
+  FROM 관제진행상황 ST
+ WHERE 상황코드 = '0001'  -- 신고접수
+   AND 관제일시 BETWEEN :V_TIMEFROM || '000000'
+                   AND :V_TIMETO   || '235959'
+   AND NOT EXISTS (
+           SELECT 'X'
+             FROM 구조활동
+            WHERE 출동센터ID = :V_CNTR_ID
+              AND 상황접수번호 = ST.상황접수번호
+       )
+ORDER BY ST.상황접수번호, ST.관제일시;
+```
+
+```sql
+-- Q3:
+select c.계약번호, c.상품코드, p.상품명, p.상품구분코드, c.계약일시, c.계약금액  
+from 계약 c, 상품 p  
+where c.지점ID = :brch_id  
+and p.상품코드 = c.상품코드  
+order by c.계약일시 desc
+```
+
+```sql
+-- A3:
+select /*+ leading(c) use_nl(p) */
+       c.계약번호, c.상품코드, p.상품명, p.상품구분코드, c.계약일시, c.계약금액
+from   계약 c, 상품 p
+where  c.지점ID = :brch_id
+and    p.상품코드 = c.상품코드
+order by c.계약일시 desc
+```
+### 8. `First Row Stopkey` 알고리즘
+`FIRST ROW`는 조건을 만족하는 레코드 하나를 찾았을 때 바로 멈추는 것을 의미한다고 했다. [참고](#6-인덱스를-이용해-최대-최소값을-구할때의-실행계획) 이를 First Row Stopkey 알고리즘이라고 한다. 조건절 컬럼이 인덱스 선두 컬럼으로 있지 않아도, 모두 인덱스에 포함되어 있다면 `First Row Stopkey` 알고리즘이 작동한다.  
+인덱스에 없다면 랜덤액세스를 피할 수 없는데, 이럴땐 다시 `Top N Stopkey` 알고리즘을 떠올리자. 
+```sql
+CREATE INDEX EMP_X1 ON EMP(DEPTNO, SAL);
+SELECT * 
+FROM (
+  SELECT SAL
+  FROM EMP
+  WHERE DEPTNO = 30
+  AND MGR = 7698
+  ORDER BY SAL DESC
+)
+WHERE ROWNUM <= 1;
+```
+인라인 뷰를 사용하므로 쿼리가 약간 더 복잡하긴 하지만, 성능 측면에서는 MIN/MAX 보다 낫다. 
+### 9. `Stopkey` 이력조회 할때 쓰려고 배운거야
+이력 데이터 조회할 때 `First Row Stopkey` 또는 `Top N Stopkey` 알고리즘이 작동할 수 있게 인덱스 설계 및 SQL 구현하는 일은 반드시 정복해야 할 산이다. 
+1. 가장 단순한 이력조회: 인덱스를 이용해 `First Row Stopkey` 가 작동하도록 한다.
+2. 좀더 복잡한 이력조회: 컬럼이 두개면? || 로 이어붙이기. `First Row Stopkey` 가 작동하지 않는다.   
+   아니면 테이블을 여러번 조회해서 붙인다. `First Row Stopkey` 알고리즘은 작동하겠다.  
+3. 컬럼이 너무 많아진 이력조회: 인덱스만 완벽하다면 아래와 같이 `Top 1`을 할 수 있다.  그러나 인덱스 구성이 바뀔수 있으니 다른 대안이 있다면 그 방법을 사용하는게 바람직하다. [참고](#12-top-n-쿼리의-소트-부하-경감-원리)
+```sql
+SELECT 장비번호, 장비명
+	  , SUBSTR(최종이력, 1, 8) 최종변경일자
+	  , TO_NUMBER(SUBSTR(최종이력, 9, 4)) 최종변경순번
+	  , SUBSTR(최종이력, 13) 최종상태코드
+FROM (
+    SELECT 장비번호, 장비명
+    , (SELECT /*+ INDEX_DESC(X 상태변경이력_PK) */
+       변경일자 || LPAD(변경순번, 4) || 상태코드
+       FROM 상태변경이력 X
+       WHERE 장비번호 = P.장비번호
+       AND ROWNUM <= 1) 최종이력
+    FROM 장비 P
+    WHERE 장비구분코드 = 'A001'
+) 
+```
+4. <mark>이제 메인 쿼리 컬럼을 서브쿼리 내 인라인 뷰에서 참조할 수 있다.</mark> 지원된다. 3 보단 앞으로 이렇게 쓰자. 
+```sql
+SELECT 장비번호, 장비명
+     , SUBSTR(최종이력, 1, 8) 최종변경일자
+     , TO_NUMBER(SUBSTR(최종이력, 9, 4)) 최종변경순번
+     , SUBSTR(최종이력, 13) 최종상태코드
+FROM (
+    SELECT 장비번호, 장비명
+         , (SELECT 변경일자 || LPAD(변경순번, 4) || 상태코드
+            FROM (
+                SELECT 변경일자, 변경순번, 상태코드
+                FROM 상태변경이력
+                WHERE 장비번호 = P.장비번호
+                ORDER BY 변경일자 DESC, 변경순번 DESC
+            )
+            WHERE ROWNUM <= 1
+           ) 최종이력
+    FROM 장비 P
+    WHERE 장비구분코드 = 'A001'
+)
+```
+5. 근데 부분처리 말고 전체처리를 해야하면? 그럴땐 윈도우 함수를 이용하는 것이 효과적이다. 
+```sql
+SELECT P.장비번호, P.장비명
+     , H.변경일자 AS 최종변경일자
+     , H.변경순번 AS 최종변경순번
+     , H.상태코드 AS 최종상태코드
+FROM   장비 P
+     , (SELECT 장비번호, 변경일자, 변경순번, 상태코드
+             , ROW_NUMBER() OVER (
+                   PARTITION BY 장비번호
+                   ORDER BY 변경일자 DESC, 변경순번 DESC
+               ) RNUM
+        FROM   상태변경이력) H
+WHERE  H.장비번호 = P.장비번호
+AND    H.RNUM = 1;
+```
+```
+| Id | Operation                | Name         | A-Rows | Buffers | Reads |
+|  0 | SELECT STATEMENT         |              |   1000 |   2881K | 36812 |
+|  1 | HASH JOIN                |              |   1000 |   2881K | 36812 |
+|  2 | TABLE ACCESS FULL        | 장비         |   1000 |      23 |     6 |
+|  3 | VIEW                     |              |   1000 |   2881K | 36806 |
+|  4 | WINDOW SORT PUSHED RANK  |              |  8700  |   2881K | 36806 |
+|  5 | TABLE ACCESS FULL        | 상태변경이력 | 18250K |   2880K | 36803 |
+```
+
+```sql
+SELECT P.장비번호, P.장비명
+     , H.변경일자 AS 최종변경일자
+     , H.변경순번 AS 최종변경순번
+     , H.상태코드 AS 최종상태코드
+FROM   장비 P
+     , (SELECT 장비번호
+             , MAX(변경일자) 변경일자
+             , MAX(변경순번) KEEP (DENSE_RANK LAST ORDER BY 변경일자, 변경순번) 변경순번
+             , MAX(상태코드) KEEP (DENSE_RANK LAST ORDER BY 변경일자, 변경순번) 상태코드
+        FROM   상태변경이력
+        GROUP BY 장비번호) H
+WHERE  H.장비번호 = P.장비번호;
+```
+```
+| Id | Operation         | Name         | A-Rows | Buffers | Reads |
+|  0 | SELECT STATEMENT  |              |   1000 |   2881K | 17809 |
+|  1 | HASH JOIN         |              |   1000 |   2881K | 17809 |
+|  2 | TABLE ACCESS FULL | 장비         |   1000 |      23 |     3 |
+|  3 | VIEW              |              |   1000 |   2881K | 17806 |
+|  4 | SORT GROUP BY     |              |   1000 |   2881K | 17806 |
+|  5 | TABLE ACCESS FULL | 상태변경이력 | 18250K |   2880K | 17803 |
+```
+6. 선분이력 모델 이란것도 있다. 쿼리가 간단한 만큼 성능 이점도 있다. 
+```sql
+SELECT P.장비번호, P.장비명
+     , H.상태코드, H.유효시작일자, H.유효종료일자, H.변경순번
+FROM   장비 P, 상태변경이력 H
+WHERE  P.장비구분코드 = 'A001'
+AND    H.장비번호 = P.장비번호
+AND    H.유효종료일자 = '99991231';
+
+SELECT P.장비번호, P.장비명
+     , H.상태코드, H.유효시작일자, H.유효종료일자, H.변경순번
+FROM   장비 P, 상태변경이력 H
+WHERE  P.장비구분코드 = 'A001'
+AND    H.장비번호 = P.장비번호
+AND    :BASE_DT BETWEEN H.유효시작일자 AND H.유효종료일자;
+```
+
+### 10. Sort Group By 생략
+선두 컬럼 인덱스를 사용하면 Sort Group By 연산을 생략할 수 있다. 실행계획에 `Sort Group By Nosort`라고 표시된 부분을 확인하자. 인덱스에서 'A' 구간을 스캔하면서 테이블을 액세스하다가 'B'를 만나는 순간, 그때까지 집계한 값을 운반단위에 저장한다. 계속해서 'B'구간도 'C'구간도 반복한다. Array Size가 3 이라고 하면 지금까지 읽은 'A', 'B', 'C' 에 대한 집계결과를 클라이언트에 전송하고 다음 Fetch Call을 기다린다. 커서를 잡아둿다가 두번째 Fetch Call부턴 'D'구간부터 반복한다. 
+### 11. 불가피하게 Sort 해야한다면?
+Sort Area 라도 적게 사용하도록 노력해라. 가공하지 않은 결과를 정렬하고 나서 출력할 때 가공하는 경우보다 가공한 결과집합을 Sort Area에 담아야 하는 경우가 Sort Area를 훨씬 많이 잡아먹는다. 또한 전체 컬럼을 정렬하는 것보다 필요한 컬럼만을 정렬하는 것이 당연히 Sort Area를 덜 사용한다. 
+### 12. Top N 쿼리의 소트 부하 경감 원리
+전교생 1,000명 중 가장 큰 학생 열 명을 선발해야 하는데(Top 10) , 정리된 학생명부가 없다면 ? 전교생을 집합시킨다음 무작위 10명을 세워두고 나머지 990명을 한 명씩 현재 10명과 비교하면서 바꿔주면 된다. 이를 `Top N 소트` 알고리즘이라고 부르자. 이 방식으로 처리하면, 대상 집합이 아무리 커도 많은 메모리 공간이 필요하지 않다. 인덱스를 사용할 수 없어 Table Full Scan을 진행하더라도 소트 연산 횟수와 Sort Area 사용량을 최소화해준다. 이것이 소트 연산 횟수와 Sort Area 사용량을 줄여주는 원리이다. Top N 쿼리가 아닐 땐 전체 데이터를 정렬한다. 윈도우 함수 중 rank나 row_number 함수는 max함수보다 소트 부하가 적다. Top N 알고리즘이 작동하기 때문이다. 
 # [부록] 실행계획
-
 ### 0. BASIC
 자식 노드가 부모 노드에 데이터를 넘긴다. 들여쓰기가 깊은 쪽이 먼저 실행된다. 같은 들여쓰기면 보통 위쪽이 드리이빙이다.
-
 ### 1. FILTER
 실행계획에서 `FILTER`는 해당할때만 자식들이 실행된다고 보면된다.
 
