@@ -716,7 +716,6 @@ encryption 함수는 단 한 번 수행된다.
 ### 23. 중복 인덱스 제거
 - 완전 중복: 인덱스 A의 선두 컬럼이 인덱스 B를 완전히 포함하는 경우 B 제거
 - 불완전 중복: 인덱스 A, B가 선두 컬럼은 같고 두 번째 컬럼만 다른 경우 평균 카디널리티가 매우 낮다면 사실상 중복이므로 제거
-
 # [4장] 조인 튜닝
 
 ### 1. NL조인
@@ -1718,9 +1717,163 @@ AND    :BASE_DT BETWEEN H.유효시작일자 AND H.유효종료일자;
 ### 10. Sort Group By 생략
 선두 컬럼 인덱스를 사용하면 Sort Group By 연산을 생략할 수 있다. 실행계획에 `Sort Group By Nosort`라고 표시된 부분을 확인하자. 인덱스에서 'A' 구간을 스캔하면서 테이블을 액세스하다가 'B'를 만나는 순간, 그때까지 집계한 값을 운반단위에 저장한다. 계속해서 'B'구간도 'C'구간도 반복한다. Array Size가 3 이라고 하면 지금까지 읽은 'A', 'B', 'C' 에 대한 집계결과를 클라이언트에 전송하고 다음 Fetch Call을 기다린다. 커서를 잡아둿다가 두번째 Fetch Call부턴 'D'구간부터 반복한다. 
 ### 11. 불가피하게 Sort 해야한다면?
-Sort Area 라도 적게 사용하도록 노력해라. 가공하지 않은 결과를 정렬하고 나서 출력할 때 가공하는 경우보다 가공한 결과집합을 Sort Area에 담아야 하는 경우가 Sort Area를 훨씬 많이 잡아먹는다. 또한 전체 컬럼을 정렬하는 것보다 필요한 컬럼만을 정렬하는 것이 당연히 Sort Area를 덜 사용한다. 
+Sort Area 라도 적게 사용하도록 노력해라. 가공하지 않은 결과를 정렬하고 나서 출력할 때 가공하는 경우보다 가공한 결과집합을 Sort Area에 담아야 하는 경우가 Sort Area를 훨씬 많이 잡아먹는다. 또한 전체 컬럼을 정렬하는 것보다 필요한 컬럼만을 정렬하는 것이 당연히 Sort Area를 x덜 사용한다. 
 ### 12. Top N 쿼리의 소트 부하 경감 원리
 전교생 1,000명 중 가장 큰 학생 열 명을 선발해야 하는데(Top 10) , 정리된 학생명부가 없다면 ? 전교생을 집합시킨다음 무작위 10명을 세워두고 나머지 990명을 한 명씩 현재 10명과 비교하면서 바꿔주면 된다. 이를 `Top N 소트` 알고리즘이라고 부르자. 이 방식으로 처리하면, 대상 집합이 아무리 커도 많은 메모리 공간이 필요하지 않다. 인덱스를 사용할 수 없어 Table Full Scan을 진행하더라도 소트 연산 횟수와 Sort Area 사용량을 최소화해준다. 이것이 소트 연산 횟수와 Sort Area 사용량을 줄여주는 원리이다. Top N 쿼리가 아닐 땐 전체 데이터를 정렬한다. 윈도우 함수 중 rank나 row_number 함수는 max함수보다 소트 부하가 적다. Top N 알고리즘이 작동하기 때문이다. 
+# [6장] 기본 DML 튜닝
+### 1. 인덱스와 DML 성능
+테이블에 레코드를 입력하면, 인덱스에도 입력해야 한다. 삭제도 마찬가지다. 테이블은 Freelist를 통해 입력할 블록을 할당받지만, 인덱스는 정렬된 자료구조이므로 탐색을 통해 블록을 찾고, 삭제해야 하며 인덱스가 여러개인 경우 모든 인덱스를 수정해줘야 한다. 핵심 트랜잭션 테이블에서 인덱스 하나라도 줄이면 TPS 는 그만큼 향상된다. 
+### 2. 무결성 제약과 DML 성능
+우선 무결성 규칙에는 아래 네 가지가 있다. 
+- 개체 무결성: PK 제약
+- 참조 무결성: FK 제약
+- 도메인 무결성: CHECK, NOT NULL, DEFAULT 등 정해진 형식/범위
+- 사용자 정의 무결성(또는 업무 제약 조건)
+이들 규칙은 애플리케이션 단에서 구현하는것 보다 DBMS 에서 제약을 설정하는 것이 더 완벽하다. 그러나 제약을 준수하는지 판단할 때 실제 데이터를 조회하므로 성능에 영향을 미친다.
+### 3. 조건절과 DML 성능
+인덱스 튜닝 원리를 그대로 적용할 수 있다.
+### 4. 서브쿼리와 DML 성능
+조인 튜닝 원리를 그대로 적용할 수 있다.
+### 5. Redo 로깅과 DML 성능
+오라클은 데이터파일과 컨트롤파일에 가해지는 모든 변경사항을 Redo 로그에 기록한다. Redo 로그는 트랜잭션 데이터가 어떤 이유에서건 유실됐을 때, 트랜잭션을 재현함으로써 유실 이전 상태로 복구하는 데 사용된다. DML을 수행할 때마다 Redo 로그를 생성해야 하므로 Redo 로깅은 DML 성능에 영향을 미친다. INSERT 작업에 대해 Redo 로깅 생략 가능을 제공하는 이유가 여기에 있다.  
+  
+Redo 로그는 아래 세 가지 목적에 사용된다. 
+1. Database Recovery
+2. Cache Recovery (Instance Recovery 시 roll forward 단계)
+3. Fast Commit
+첫째, Redo 로그는 물리적으로 디스크가 깨지는 등의 Media Fail 발생 시 데이터베이스를 복구하기 위해 사용된다. 이때는 온라인 Redo 로그를 백업해 둔 Archived Redo 로그를 이용한다. 'Media Recovery'라고도 한다.  
+둘째, Redo 로그는 'Cache Recovery'를 위해 사용하며 다른 말로 'Instatance Recovery' 라고도 한다. 모든 DBMS가 버퍼캐시를 도입하는 이유가 I/O 성능을 높이기 위해서인데, 버퍼캐시는 휘발성이다. 캐시에 저장된 변경사항이 디스크 상의 데이터 블록에 아직 기록되지 않은 상태에서 정전 등이 발생해 인스턴스가 비정상적으로 종료되면, 그때까지의 작업내용을 모두 잃는다. 이러한 트랜잭션 데이터 유실에 대비하기 위해 Redo 로그를 남긴다.  
+마지막으로, Redo 로그는 'Fast Commit'을 위해 사용한다. 변경된 메모리 버퍼블록을 디스크 상의 데이터 블록에 반영하는 작업은 랜덤 액세스 방식으로 이루어지므로 매우 느리다. 반면 로그는 Append 방식으로 기록하므로 상대적으로 빠르다. 따라서 트랜잭션에 의한 변경사항을 우선 Append 방식으로 빠르게 로그 파일에 기록하고, 변경된 메모리 버퍼블록과 데이터파일 블록 간 동기화는 적절한 수단(DBWR)을 이용해 나중에 배치(Batch) 방식으로 일괄 수행한다.  
+사용자의 갱신내용이 메모리상의 버퍼블록에만 기록된 채 아직 디스크에 기록되지 않았지만 Redo 로그를 믿고 빠르게 커밋을 완료한다는 의미에서 이를 'Fast Commit' 이라고 부른다. 커밋 정보까지 Redo 로그 파일에 안전하게 기록했다면, 인스턴스 Crash 가 발생해도 언제든 복구할 수 있으므로 오라클은 안심하고 커밋을 완료할 수 있다. 
+### 6. Undo 로깅과 DML 성능
+과거에는 롤백(Rollback) 이라는 용어를 자주 사용했지만, 9i부터 오라클은 Undo라는 용어를 사용하고 있다. Redo와 Undo는 다르다. <mark>Redo는 트랜잭션을 재현함으로써 과거를 현재 상태로 되돌리는 데 사용하고, Undo는 트랜잭션을 롤백함으로써 현재를 과거 상태로 되돌리는 데 사용한다.</mark> 따라서 Redo 에는 트랜잭션을 재현하는 데 필요한 정보를 로깅하고, Undo 에는 변경된 블록을 이전 상태로 되돌리는데 필요한 정보를 로깅한다. DML을 수행할 때마다 Undo를 생성해야 하므로 Undo 로깅은 DML 성능에 영향을 미친다. 그렇다고 Undo를 안 남길 순 없다. 오라클은 그런 방법을 아예 제공하지 않는다. 
+### 7. Undo의 용도
+Undo 데이터를 기록한 공간은 해당 트랜잭션이 커밋하는 순간, 다른 트랜잭션이 재사용할 수 있는 상태로 바뀐다. 가장 오래 전에 커밋한 Undo 공간부터 재사용하므로 Undo 데이터가 곧바로 사라지진 않겠지만, 언젠가 다른 트랜잭션 데이터로 덮어쓰이면서 사라질 수 밖에 없다. Undo에 기록한 데이터는 아래 세 가지 옵션에 사용된다. 
+1. Transaction Rollback
+2. Transaction Recovery (Instance Recovery 시 rollback 단계)
+3. Read Consistency
+첫째, 트랜잭션에 의한 변경사항을 최종 커밋하지 않고 롤백하고자 할 때 Undo 데이터를 이용한다.  
+둘째, Instance Crash 발생 후 Redo를 이용해 roll forward 단계가 완료되면 최종 커밋되지 않은 변경사항까지 모두 복구된다. 따라서 시스템이 셧다운된 시점에 아직 커밋되지 않았던 트랜잭션들을 모두 롤백해야 하는데, 이때 Undo 데이터를 사용한다.  
+마지막으로, Undo 데이터는 '읽기 일관성(Read Consistency)'을 위해 사용한다. SQL 튜닝 관점에서 주목할 내용은 읽기 일관성이다. <mark>읽기 일관성을 위해 Connsistent 모드로 데이터를 읽는 오라클에선 동시 트랜잭션이 많을수록 블록 I/O가 증가하면서 성능 저하로 이어지기 때문이다. </mark>
+### 8. MVCC(Multi-Version Concurrency Control) 모델
+MVCC 모델을 사용하는 오라클은 데이터를 두 가지 모드로 읽는다. 하나는 Current 모드, 다른 하나는 Consistent 모드이다. Current 모드는 디스크에서 캐시로 적재된 원본 블록을 현재 상태 그대로 읽는 방식을 말한다. Consistent 모드는 쿼리가 시작된 이후에 다른 트랜잭션에 의해 변경된 블록을 만나면 원본 블록으로부터 복사본을 만들고 거기에 Undo 를 적용함으로써 쿼리가 시작된 지점으로 되돌려서 읽는 방식을 말한다.  
+Consistent 모드를 정확히 이해하려면 SCN에 대한 이해가 필요하다. 오라클은 시스템에서 마지막 커밋이 발생한 시점정보를 SCN이라는 Global 변수값으로 관리한다. 이 값은 기본적으로 각 트랜잭션이 커밋할 때마다 1씩 증가한다. 오라클은 각 블록이 마지막으로 변경된 시점을 관리하기 위해 모든 블록 헤더에 SCN을 기록한다. (블록 SCN) 그리고 모든 쿼리는 SCN 값을 확인하고서 읽기 작업을 시작한다. (쿼리 SCN)  
+Consistent 모드는 쿼리 SCN 과 블록 SCN을 비교함으로써 쿼리 수행 도중에 블록이 변경됐는지를 확인하면서 데이터를 읽는 방식이다. 블록 SCN이 쿼리 SCN보다 큰 블록을 만나면 복사본 블록을 만들고 Undo 데이터를 적용해 시작점으로 되돌려 읽는다. Select 문은 항상 Consistent 모드로 데이터를 받는다. DML문은 Consistent 모드로 대상 레코드를 찾고, Current 모드로 추가/변경/삭제한다. 즉, Consistent 모드로 DML 문이 시작된 시점에 존재했던 데이터 블록을 찾고, 다시 Current 모드로 원본 블록을 찾아 갱신한다. 변경 작업을 복사본 블록에 할 순 없다.
+### 9. Lock 과 DML 성능
+Lock을 자주, 길게 잡거나 레벨을 높이면 DML 성능은 느려진다. 그렇다고 너무 적게, 짧게 낮은 레벨로 잡으면 품질이 나빠진다. 트레이드 오프 관계이다. 매우 세심한 동시성 제어가 필요하다.  
+동시성 제어란, 동시에 실행되는 트랜잭션 수를 최대화하면서도 입력, 수정, 삭제, 검색 시 데이터 무결성을 유지하기 위해 노력하는 것을 말한다. 
+### 10. 커밋과 DML 성능
+DML은 커밋을 해야 끝난다. 특히 DML 이 Lock에 의해 블로킹된 경우, 커밋은 DML 성능과 직결된다.  
+모든 DBMS가 Fast Commit(변경된 데이터 블록을 디스크에 바로 다 쓰지않고, 우선 Redo Log 만 기록하고 커밋을 끝내는 방식) 을 구현하고 있다. 구현방식은 서로 다르지만, 갱신한 데이터가 아무리 많아도 커밋만큼은 빠르게 처리한다는 점은 같다. 
+### 11. 커밋 매커니즘
+DB에 접속한 사용자를 대신해 모든 일을 처리하는 서버 프로세스(사용자 요청을 처리하려고 붙는 프로세스. 요청 시 1:1 load)는 버퍼캐시를 통해 데이터를 읽고 쓴다. 버퍼캐시에서 변경된 블록(Dirty 블록)을 모아 주기적으로 데이터파일에 일괄 기록하는 작업은 DBWR 프로세스가 맡는다.  
+버퍼캐시는 휘발성이므로 DBWR 프로세스가 Dirty 블록을 데이터파일에 반영할 때까지 불안한 상태라고 생각할 수 있다. 하지만, 변경사항을 Redo 로그에도 기록해두었다. 유실되면 Redo 로그로 복구한다. 그러나 Redo 로그도 파일이라 Append 방식으로 기록하더라도 디스크 I/O는 느리다. Redo 로깅 성능 문제를 해결하기 위해 오라클은 로그 버퍼를 사용한다. Redo 로그 파일에 기록하기 전에 먼저 로그버퍼에 기록하는 방식이다. 나중에 LGWR 가 Redo 파일에 일괄 기록한다.  
+![](image/Pasted%20image%2020260609234850.png)
+오라클은 변경 전에 항상 로그부터 기록한다. 이를 `Write Ahead Logging` 이라고 부른다. 
+메모리 버퍼캐시도 Redo 로그도 휘발성이면 커밋한 트랜잭션의 영속성을 어떻게 보장할 것인가? DBWR와 LGWR 프로세스는 주기적으로 깨어나 각각 Dirty 블록과 Redo 로그버퍼를 파일에 기록한다. LGWR 프로세스는 서버 프로세스가 커밋을 요청하면 깨어난다. 적어도 커밋시점에는 Redo 로그버퍼 내용을 로그파일에 기록한다. 이를 `Log Force at Commit`이라고 부른다.  
+서버 프로세스는 Redo 로그버퍼에 기록된 내용을 디스크에 기록하도록 LGWR 프로세스에 신호를 보낸 후 작업을 완료했다는 신호를 받아야 다음 작업을 진행할 수 있다. Sync 방식이다. LGWR 프로세스가 Redo 로그를 기록하는 작업은 디스크 I/O 작업이다. 커밋은 그래서 생각보다 느리다.  
+*서버 프로세스는 커밋 레코드를 로그버퍼에 기록하고 LGWR 프로세스에 신호를 보낸 후 대기(Wait 큐에서 Sleep) 상태 로 전환한다. LGWR 프로세스가 로그 버퍼를 디스크에 기록하는 작업을 마치면 Wait 큐에서 대기 중인 서버 프로세스 에 완료 메시지를 전송한다. 신호를 받은 서버 프로세스는 Runnable 큐로 옮겨진 후 CPU를 할당받으면 다음 작업을 계 속 진행한다.*
+### 12. 데이터베이스 Call과 성능
+- Call: 클라이언트/서버 프로세스가 Oracle 서버 프로세스에게 요청 → Oracle 이 처리 → 결과/상태 반환하는 과정. 데이터베이스 Call 이 많으면 성능은 느릴 수밖에 없다. 
+- Parse Call: SQL 파싱과 최적화를 수행하는 단계
+- Execute Call: SQL을 실행하는 단계
+- Fetch Call: 사용자에게 결과집합을 전송하는 단계 (버퍼 → 사용자)
+- User Call: 네트워크를 경유해 DBMS 외부로부터 인입되는 Call. 3-Tire 아키텍처에서 User Call은 WAS 서버에서 발생하는 Call
+- Recursive Call: DBMS 내부에서 발생하는 Call. 데이터 딕셔너리 조회, 사용자 정의 함수/프로시저 실행할때의 Call
+### 13. One SQL의 중요성과 Array Processing 활용
+아래와 같이 가급적 One SQL 로 구현하려고 노력해야 한다. 빠르다. 아래 구문 활용법을 잘 익히자.
+- Insert Into Select
+- 수정가능 조인 뷰
+- Merge 문
+```sql
+insert into target -- insert into: 조회한 결과를 그대로 다른 테이블에 insert
+select * from source;
+```
+One SQL로 구현하기에 복잡한 업무 로직이 많다면 `Array Processing` 기능을 활용하자. SQL을 **한 건씩 처리하지 않고 여러 건을 배열 단위로 묶어서 처리**하는 기능이다. Call 부하를 획기적으로 줄일 수 있다. 
+
+### 14. 인덱스 및 제약 해제를 통한 대량 DML 튜닝
+```sql
+/* 1. PK제약과 인덱스를 해제한 상태에서 데이터 입력하기 */
+truncate table target;
+alter table target modify constraint target_pk disable drop index; --pk제약 비활성화
+alter index target_x1 unusable; --인덱스 drop
+alter session set skip_unusable_index = true; --unuable 상태인 index를 skip하도록 변경
+
+insert /*+append*/ into target 
+select * from source;
+
+alter table target modify constraint target_pk enable NOVALIDATE; -- PK제약 확성화
+-- PK제약을 활성화하면 PK 인덱스는 자동으로 생성된다.
+-- NOVALIDATE: 기입력된 데이터에 대한 무결성 체크를 생략하도록 하는 옵션
+```
+X1 인덱스는 Unusable 상태로 변경했지만, PK 인덱스는 제약을 비활성화하면서 아예 Drop 했다. PK 인덱스는 Unusable 상태에서 데이터를 입력할 수 없다. Drop 하지 않고 Unusable 상태에서 데이터를 입력하고 싶다면, Non-Unique 인덱스를 사용하면 된다. 
+```sql
+/*대량 INSERT 전 인덱스 unusable → INSERT 빠르게 수행 
+→ 인덱스 rebuild → PK 제약조건 enable novalidate*/
+
+set timing off;
+-- SQL 실행 시간 출력 기능 OFF
+-- 아래 준비 작업들의 시간은 측정하지 않겠다는 의미
+
+truncate table target;
+-- TARGET 테이블의 데이터를 전부 삭제
+-- DELETE보다 빠르고, HWM도 초기화됨
+-- 단, 자동 COMMIT 발생
+
+alter table target drop primary key drop index;
+-- TARGET 테이블의 Primary Key 제약조건 삭제
+-- 동시에 PK를 위해 사용하던 인덱스도 삭제
+
+create index target_pk on target(no, empno);
+-- TARGET 테이블에 NO, EMPNO 컬럼 순서로 인덱스 생성
+-- 이름은 TARGET_PK
+
+alter table target add
+constraint target_pk primary key (no, empno)
+using index target_pk;
+-- TARGET 테이블에 PK 제약조건 추가
+-- PK 컬럼은 (NO, EMPNO)
+-- 새 인덱스를 만들지 않고, 방금 만든 TARGET_PK 인덱스를 PK 인덱스로 사용
+
+alter table target modify constraint target_pk disable keep index;
+-- PK 제약조건 비활성화
+-- 단, PK 인덱스는 삭제하지 않고 유지
+-- 즉, 제약조건 검사는 안 하지만 인덱스 객체는 남겨둠
+
+alter index target_pk unusable;
+-- TARGET_PK 인덱스를 사용 불가능 상태로 변경
+-- 이후 INSERT 시 인덱스 유지 비용을 줄이려는 목적
+
+alter index target_x1 unusable;
+-- TARGET_X1 인덱스도 사용 불가능 상태로 변경
+-- 마찬가지로 대량 INSERT 중 인덱스 갱신 비용을 피하려는 목적
+
+set timing on;
+-- 이제부터 SQL 실행 시간 출력 ON
+-- 아래 INSERT 작업 시간만 측정하려는 목적
+
+insert /*+ append */ into target
+select * from source;
+-- SOURCE 테이블 전체 데이터를 TARGET에 입력
+-- APPEND 힌트로 Direct Path Insert 유도
+-- 버퍼 캐시를 거치는 일반 INSERT보다 빠르게 적재 가능
+-- 단, 테이블 끝에 새 블록을 붙이는 방식이고, 보통 대량 적재용
+
+alter index target_x1 rebuild;  
+-- 사용 불가능(unusable) 상태였던 TARGET_X1 인덱스를 재생성  
+-- 대량 INSERT 후 한 번에 인덱스를 다시 만드는 과정  
+-- INSERT 중 건건이 인덱스를 갱신하는 것보다 빠를 수 있음  
+  
+alter index target_pk rebuild;  
+-- 사용 불가능 상태였던 TARGET_PK 인덱스를 재생성  
+-- PK 인덱스도 다시 사용 가능한 상태로 만듦  
+  
+alter table target modify constraint target_pk enable novalidate;  
+-- TARGET_PK 기본키 제약조건을 다시 활성화  
+-- 단, NOVALIDATE이므로 기존 데이터 전체를 검사하지 않음  
+-- 이후 새로 들어오는 데이터에 대해서는 PK 제약조건을 검사함
+```
+
 # [부록] 실행계획
 ### 0. BASIC
 자식 노드가 부모 노드에 데이터를 넘긴다. 들여쓰기가 깊은 쪽이 먼저 실행된다. 같은 들여쓰기면 보통 위쪽이 드리이빙이다.
