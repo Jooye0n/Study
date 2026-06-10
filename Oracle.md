@@ -1873,89 +1873,107 @@ alter table target modify constraint target_pk enable novalidate;
 -- 단, NOVALIDATE이므로 기존 데이터 전체를 검사하지 않음  
 -- 이후 새로 들어오는 데이터에 대해서는 PK 제약조건을 검사함
 ```
-
-# [부록] 실행계획
-### 0. BASIC
-자식 노드가 부모 노드에 데이터를 넘긴다. 들여쓰기가 깊은 쪽이 먼저 실행된다. 같은 들여쓰기면 보통 위쪽이 드리이빙이다.
-### 1. FILTER
-실행계획에서 `FILTER`는 해당할때만 자식들이 실행된다고 보면된다.
-
+### 15. 수정 가능 조인 뷰
+`조인 뷰`는 FROM 절에 두 개 이상 테이블을 가진 뷰를 가리킨다. 입력, 수정, 삭제가 허용되는 조인 뷰를 `수정가능 조인 뷰` 라고 하며, <mark>1쪽 집합과 조인하는 M쪽 집합에만 입력, 수정, 삭제가 허용된다. </mark>
+조인 결과에서 여러번 반복되는 쪽이 1이다. (1이니까 여러번 반복된다고 생각하면 쉽다. 부서는 하나고 부서원은 여러명이다. ) Oracle은 UPDATE할 때 **뷰의 한 행이 원본 테이블의 딱 한 행으로 매핑돼야** 안전하게 수정할 수 있다. 수정대상 row가 분명해야하므로 M쪽 만 수정 가능하다. 
 ```sql
-SELECT * FROM SQLP.library
-WHERE :cust_name IS NULL
-AND 등록번호 IN ('EM9665', 'EM17033', 'CEM97491')
-UNION ALL
-SELECT * FROM SQLP.library
-WHERE :cust_name IS NOT NULL
-AND 저자 = :cust_name
-AND 등록번호 IN ('CEM97499', 'CEM97494', 'EM19275');
+create table emp as select * from scott.emp;
+create table dept as select * from scott.dept;
+
+create or replace view EMP_DEPT_VIEW as
+select e.rowid emp_rid, e.*, d.rowid dept_rid, d.dname, d.loc
+from emp e, dept d
+where e.deptno = d.deptno;
+
+update EMP_DEPT_VIEW set loc = 'SEOUL' where job = 'CLERK';
 ```
-
-```
--------------------------------------------------------------------------------
-| Id  | Operation           | Name    | Rows  | Bytes | Cost (%CPU)| Time     |
--------------------------------------------------------------------------------
-|   0 | SELECT STATEMENT    |         |     9 |  6318 |   410   (1)| 00:00:01 |
-|   1 |  UNION-ALL          |         |       |       |            |          |
-|*  2 |   FILTER            |         |       |       |            |          |
-|*  3 |    TABLE ACCESS FULL| LIBRARY |    17 | 11934 |   410   (1)| 00:00:01 |
-|*  4 |   TABLE ACCESS FULL | LIBRARY |     8 |  5616 |   410   (1)| 00:00:01 |
--------------------------------------------------------------------------------
-
-조건 검사
-→ 조건이 TRUE면 자식 실행
-→ 조건이 FALSE면 자식 실행 안 함
-```
-
-### 2. NESTED LOOPS
-실행계획에서 `NESTED LOOPS`는 **바깥쪽 결과 한 건마다 안쪽을 반복 탐색**한다는 뜻이므로,
-3번에서 나온 결과 한 건마다 5번 인덱스를 탐색한다는 뜻이다.
-서로다른 결과집합 A와 B를 연결할 때만 사용된다. 말그대로 NL 조인이다.
-
+10, 20, 30 부서에 job='CLERK' 인 사원이 있으므로, 세 부서의 loc 이 모두 'SEOUL'로 바뀐다. 
+옵티마이저에게 어느쪽이 1쪽 집합인지 알려주려면, 아래와 같이 1쪽 집합에 PK 제약을 설정하거나 Unique 인덱스를 생성해야 수정가능 조인뷰를 통한 입력/수정/삭제가 가능하다.  
 ```sql
-CREATE INDEX 상품_X01 ON SQLP.상품(상품번호, 상품분류);
-CREATE INDEX 거래_x01 ON SQLP.거래(거래구분코드, 상품번호, 거래일자);
+alter table dept add constraint dept_pk primary key(deptno);
+update EMP_DEPT_VIEW set comm = nvl(comm, 0) + (sal * 0.1) where sal <= 1500;
+```
+위와 같이 PK 제약을 설정하면 EMP 테이블은 `키-보존 테이블`이 되고, DEPT 테이블은 `비 키-보존 테이블`로 남는다. 조인 후에도 PK(키)가 보존되기 때문에 키 보존 테이블이다.  
+**키 보존 테이블이란?** 조인된 결과집합을 통해서도 중복 값 없이 Unique 하게 식별이 가능한 테이블을 말한다. 뷰에 rowid 를 제공하는 테이블을 말한다.   
+**정리하면,** `DEPT 1 : M EMP` , `EMP = 키 보존 테이블` 이다. 
+조인 후에도 자기 테이블의 PK가 중복되지 않고 한 번씩만 등장하면 `키 보존 테이블`이다. 
+M쪽만 수정이 가능한 이유는 M 쪽이 `키 보존 테이블`이기 때문이다. EMP 수정 가능, DEPT 수정 불가.  
+`GROUP BY` 한 집합과 조인한 테이블도 키가 보존된다. 
+```sql
+-- 이 쿼리는 고객_t 테이블 고객번호에 Unique 인덱스가 없으면 오류나지만,
+update (
+  select o.주문금액, o.할인금액, c.고객등급
+  from 주문_t o, 고객_t c
+  where o.고객번호 = c.고객번호
+  and o.주문금액 >= 1000000
+  and c.고객등급 = 'A'
+)
+set 할인금액 = 주문금액 * 0.2, 주문금액 = 주문금액 * 0.8
 
-SELECT /*+leading(a) use_nl(b)*/
-b.상품코드, b.상품명, a.고객번호, a.거래일자, a.거래량, a.거래금액
-FROM SQLP.거래 a, SQLP.상품 b
-WHERE a.거래구분코드 ='AC'
-AND a.거래일자 BETWEEN '20090101' AND '20091031'
-AND b.상품번호 = a.상품번호
-AND b.상품분류 = '가전';
+-- 아래와 같이 고객_t 테이블을 Group By 처리함으로써 ORA-01779 에러를 피할 수 있다.
+update (
+  select o.주문금액, o.할인금액
+  from 주문_t o
+       , (select 고객번호 from 고객_t where 고객등급 = 'A' group by 고객번호) c
+  where o.고객번호 = c.고객번호
+  and o.주문금액 >= 1000000
+)
+set 할인금액 = 주문금액 * 0.2, 주문금액 = 주문금액 * 0.8
+```
+### 16. MERGE INTO
+SourceTable 기준으로 TargetTable Left Outer 방식으로 조인해서 조인에 성공하면 update, 실패하면 insert 한다.  
+![](image/Pasted%20image%2020260611004239.png)
+```sql
+merge into TargetTable t using SourceTable s on (t.키 = s.키)
+when matched then update 
+set t.컬럼1 = s.컬럼1, t.컬럼2 = s.컬럼2
+when not matched then insert (t.키, t.컬럼1, t.컬럼2) values (s.키, s.컬럼1, s.컬럼2);
+```
+  
+아래와 같이 UPDATE와 INSERT를 선택적으로 처리할 수도 있다. 
+```sql
+merge into TargetTable t using SourceTable s on (t.키 = s.키)
+when matched then update
+   set t.컬럼1 = s.컬럼1, t.컬럼2 = s.컬럼2;
+   
+merge into TargetTable t using SourceTable s on (t.키 = s.키)
+when not matched then insert
+   (t.키, t.컬럼1, t.컬럼2) values (s.키, s.컬럼1, s.컬럼2);
 ```
 
-```
---------------------------------------------------------
-| Id  | Operation                             | Name   |
---------------------------------------------------------
-|   0 | SELECT STATEMENT                      |        |
-|   1 |  NESTED LOOPS                         |        |
-|   2 |   NESTED LOOPS                        |        |
-|   3 |    TABLE ACCESS BY INDEX ROWID BATCHED| 거래    |
-|*  4 |     INDEX RANGE SCAN                  | 거래_X0 |
-|*  5 |    INDEX RANGE SCAN                   | 상품_X0 |
-|   6 |   TABLE ACCESS BY INDEX ROWID         | 상품    |
---------------------------------------------------------
+아래와 같이 수정가능 조인 뷰 기능을 대체할 수 있게 되었다.
+```sql
+update
+   (select d.deptno, d.avg_sal as d_avg_sal, e.avg_sal as e_avg_sal
+    from   (select deptno, round(avg(sal), 2) avg_sal from emp group by deptno) e
+         , dept d
+    where  d.deptno = e.deptno )
+set d_avg_sal = e_avg_sal;
 
-Predicate Information (identified by operation id):
----------------------------------------------------                              4 - access("A"."거래구분코드"='AC' AND "A"."거래일자">=20090101 AND "A"."거래일자"<=20091031)
-    filter("A"."거래일자">=20090101 AND "A"."거래일자"<=20091031)
-5 - access("B"."상품번호"="A"."상품번호" AND "B"."상품분류"='가전')
+merge into dept d
+using (select deptno, round(avg(sal), 2) avg_sal from emp group by deptno) e
+on (d.deptno = e.deptno)
+when matched then update set d.avg_sal = e.avg_sal;
 ```
 
-```
-## 전통적인 NL 조인의 실행계획 참고용
-|   0 | SELECT STATEMENT                      |        |
-|   1 |   NESTED LOOPS                        |        |
-|   2 |    TABLE ACCESS BY INDEX ROWID BATCHED| 거래    |
-|*  3 |     INDEX RANGE SCAN                  | 거래_X0 |
-|*  4 |    TABLE ACCESS BY INDEX ROWID BATCHED| 상품    |
-|   5 |     INDEX RANGE SCAN                  | 상품_X0 |
-```
+**DELETE Clause**
+```sql
+MERGE INTO customer t USING customer_delta s ON (t.cust_id = s.cust_id)
+WHEN MATCHED THEN
+    UPDATE
+       SET t.cust_nm = s.cust_nm
+         , t.email   = s.email
+         , ...
+    DELETE
+     WHERE t.withdraw_dt IS NOT NULL -- 탈퇴일시가 null이 아닌 레코드 삭제
 
-### 3. Row Source Operation
-cr: 블록 요청 횟수
-pr: 디스크에서 읽은 블록 수
-pw: 디스크에 쓴 블록 수
-<mark>읽은 블록은 cr 보면 된다. 한 블록에 평균 500개 레코드가 저장되어 있다고 보고 비효율을 확인하자.</mark>
+WHEN NOT MATCHED THEN
+    INSERT
+        (cust_id, cust_nm, email, tel_no, region, addr, reg_dt)
+    VALUES
+        (s.cust_id, s.cust_nm, s.email, s.tel_no,
+         s.region, s.addr, s.reg_dt);
+```
+MERGE 문에서 UPDATE가 이루어진 결과로서 탈퇴일시가 Null이 아닌 레코드만 삭제한다는 사실을 기억하자. 즉, 탈퇴일시가 Null이 아니었어도 MERGE문을 수행한 결과가 Null 이면 삭제하지 않는다. 
+
+# [부록] 실행계획…
