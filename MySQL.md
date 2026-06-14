@@ -158,7 +158,7 @@ ALTER TABLE new_table MODIFY COLUMN 이름 varchar(100) DEFAULT '홍길동'; -- 
    - 왜쓰냐면, 한 칸에 두개 이상의 데이터를 넣어야 한다면 찾기도 수정하기도 어려워지므로.
      물론 JSON, Array 사용 시 저장은 가능하지만 수정이 어렵고 느리다.
 2. 제2정규화 (2NF)
-   - partial dependency 를 제거한 테이블. 하나의 composite primary key 에 종속되면 테이블 분리. <small>\*composite primary key: 기본키(PK)를 컬럼 2개 이상 조합해서 만드는 것</small>
+   - partial dependency 를 제거한 테이블. 하나의 composite primary key 에 종속되면 테이블 분리. <small>*composite primary key: 기본키(PK)를 컬럼 2개 이상 조합해서 만드는 것</small>
    - 현재 테이블의 주제와 관련 없는 컬럼을 다른 테이블로 빼는 작업
    - 왜쓰냐면, 중복 데이터가 적어지므로 수정이 쉬워진다.
    - 테이블이 쪼개지므로 조회가 다소 불편해진다.
