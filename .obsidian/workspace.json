@@ -34,9 +34,19 @@
               "icon": "lucide-file",
               "title": "git & github"
             }
+          },
+          {
+            "id": "fa5a3e42fd212fcf",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "새 탭"
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -194,7 +204,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 274.5
+    "width": 200,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -208,21 +219,22 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "727457afe0bbca07",
+  "active": "fa5a3e42fd212fcf",
   "lastOpenFiles": [
-    "image/Pasted image 20260615001936.png",
-    "image/Pasted image 20260615001509.png",
-    "image/Pasted image 20260615001204.png",
-    "image/Pasted image 20260615001024.png",
-    "image/Pasted image 20260615000909.png",
-    "image/Pasted image 20260615000825.png",
+    "git & github.md",
     "Pasted image 20260615001936.png",
     "Pasted image 20260615001509.png",
     "Pasted image 20260615001204.png",
     "Pasted image 20260615001024.png",
     "Pasted image 20260615000909.png",
+    "Pasted image 20260615000825.png",
+    "AI_Obsidian.md",
+    "~$AI.docx",
+    "image/Pasted image 20260615001936.png",
+    "image/Pasted image 20260615001509.png",
+    "image/Pasted image 20260615001204.png",
+    "image/Pasted image 20260615001024.png",
     "Oracle.md",
-    "git & github.md",
     "무제.base",
     "무제 1.base",
     "무제.canvas",
