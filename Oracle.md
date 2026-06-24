@@ -1915,5 +1915,67 @@ WHEN NOT MATCHED THEN
          s.region, s.addr, s.reg_dt);
 ```
 MERGE 문에서 UPDATE가 이루어진 결과로서 탈퇴일시가 Null이 아닌 레코드만 삭제한다는 사실을 기억하자. 즉, 탈퇴일시가 Null이 아니었어도 MERGE문을 수행한 결과가 Null 이면 삭제하지 않는다. 
-### 17. 
+
+**Merge Into**
+저장하려는 레코드가 기존에 있던 것이면 UPDATE를 수행하고, 그렇지 않으면 INSERT 한다. Merge Into를 사용하면 항상 두번이 아닌 최대 두번 수행한다. 
+```sql
+update dept set dname = :val2, loc = :val3 where deptno = :val1;
+if sql%rowcount = 0 then
+  insert into dept(deptno, dname, loc) values(:val1, :val2, :val3);
+else if; 
+```
+
+**MERGE**
+아래와 같이 MERGE문을 활용하면 SQL을 한 번만 수행한다. 
+```sql
+merge into dept a
+using (select :val1 deptno, :val2 dname, :val3 loc from dual) b
+on (b.deptno = a.deptno)
+when matched then
+  update set dname = b.dname, loc = b.loc
+when not matched then
+  insert (a.deptno, a.dname, a.loc) values (b.deptno, b.dname, b.loc);
+```
+### 17. Direct Path I/O  를 언제 사용해야 좋을까?
+온라인 트랜잭션은 기준성 데이터, 특정 고객, 특정 상품, 최근 거래 등을 반복적으로 읽기 때문에 버퍼캐시가 성능 향상에 도움이 된다. 반면, 정보계 시스템(DW/OLAP 등)이나 배치 프로그램에서 사용하는 SQL은 주로 대량 데이터를 처리하기 때문에 버퍼캐시를 경유하는 I/O 매커니즘이 오히려 성능을 떨어뜨릴 수 있다. 재사용성이 낮은 블록들이 버퍼캐시를 점유한다면 다른 프로그램 성능에도 나쁜 영향을 미친다. 그래서 오라클은 버퍼캐시를 경유하지 않고 곧바로 데이터 블록을 읽고 쓸 수 있는 Direct Path I/O 기능을 제공한다. 아래는 그 기능이 작동하는 경우이다.  
+- <mark>병렬 쿼리로 Full Scan을 수행할 때</mark> `parallele`또는 `parallel_index` 힌트를 사용할 때
+- <mark>병렬 DML을 수행할 때</mark>
+- <mark>Direct Path Insert를 수행할 때</mark>
+- Temp 세그먼트 블록들을 읽고 쓸 때
+- direct 옵션을 지정하고 export를 수행할 때
+- nocache 옵션을 지정한 LOB 컬럼을 읽을 때
+### 18. Direct Path Insert 와 일반 Insert 는 어떻게 다르게 동작하는가?
+**일반 Insert**
+1. 데이터를 입력할 수 있는 블록을 Freelist 에서 찾는다. 서버 프로세스는 테이블 `HWM(High-Water Mark)` 아래쪽에 있는 블록 중 데이터 입력이 가능한 블록을 목록으로 관리하는데, 이를 `Freelist`라고 한다.   <small>*HWM란 사용된적 있는 블록의 최고지점을 말한다. (여기까지 데이터가 들어간 적 있다.) </small>
+2. Freelist 에서 할당받은 블록을 버퍼캐시에서 찾는다. 
+3. 버퍼캐시에 없으면, 데이터파일에서 읽어 버퍼캐시에 적재한다.
+4. Insert 내용을 Undo 세그먼트에 기록한다.
+5. Insert 내용을 Redo 로그에 기록한다.
+
+**Direct Path Insert**
+아래와 같이 입력하면 Direct Path Insert 방식으로 입력이 가능하다. 
+- Insert ... Select 문에 append 힌트 사용
+- parallel 힌트를 이용해 병렬 모드로 insert
+- direct 옵션을 지정하고 SQL Loader로 데이터 적재
+- CTAS(create table ... as select) 문 수행
+1. Freelist를 참조하지 않고 HWM 바깥 영역에 데이터를 순차적으로 입력한다.
+2. 블록을 버퍼캐시에서 탐색하지 않는다.
+3. 버퍼캐시에 적재하지 않고, 데이터파일에 직접 기록한다.
+4. Undo 로깅을 안 한다.
+5. Redo 로깅을 안 하게 할 수 있다. 테이블을 아래와 같이 nologging 모드로 전환한 상태에서 Direct Path Insert 하면 된다. 
+
+> 주의할 점
+> 첫째, 이 방식을 사용하면 성능은 비교할 수 없이 빨라지지만 Exclusive 모드 TM Lock이 걸린다. 따라서 커밋하기 전까지 다른 트랜잭션은 해당 테이블에 DML을 수행하지 못한다. 트랜잭션이 빈번한 주간에 이 옵션을 사용하는 것은 절대 금물이다.
+> 둘째, Freelist를 조회하지 않고 HWM 바깥 영역에 입력하므로 테이블에 여유 공간이 있어도 재활용하지 않는다는 사실이다. Range 파티션 테이블이면 과거 데이터를 DELETE가 아닌 파티션 DROP 방식으로 지워야 공간 반환이 제대로 이루어진다. 비파티션 테이블이면 주기적으로 Reorg 작업을 수행해 줘야 한다.  
+
+### 19. 병렬 DML 
+- 병렬 쿼리: SELECT를 나눠서 실행
+- 병렬 DDL: CREATE, ALTER, DROP, TRUNCATE, RENAME
+- 병렬 DML: SELECT 제외 DML
+병렬 쿼리와 병렬 DDL은 기본적으로 활성화돼 있어 언제든 병렬 처리 가능하다. 반면, 병렬 DML은 기본적으로 비활성화돼 있다. 따라서 DML을 병렬로 처리하려면, 먼저 활성화 해야한다. 단, Exclusive 모드 TM Lock이 걸린다. 
+```sql
+alter session enable parallel dml;
+```
+만약 실수로 활성화하지 않으면 대상 레코드를 찾는 작업은 병렬로 진행하지만, 추가/변경/삭제는 QC가 혼자 담당하므로 병목이 생긴다.  <small>*QC는 Query Coordinator의 줄임말이다. 최초 DB에 접속해서 SQL을 수행한 프로세스는 Query Coordinator 역할을 맡는다. 병렬로 처리할 수 없거나 병렬로 처리하도록 지정하지 않은 작업은 Query Coordinator가 직접 처리한다. </small>
+
 # [부록] 실행계획…
