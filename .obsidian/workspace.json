@@ -35,8 +35,7 @@
               "title": "공부계획"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -209,10 +208,10 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "e96cb4026c767409",
+  "active": "e481445ffad91bdc",
   "lastOpenFiles": [
-    "여신업무.md",
     "공부계획.md",
+    "여신업무.md",
     "HTML&CSS.md",
     "무제.md",
     "git & github.md",
