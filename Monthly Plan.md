@@ -1,16 +1,15 @@
 ##### 00. 기술스택
-- Kotlin, Java, Gradle
+- Kotlin, Java, ==Gradle==
 - Spring MVC, Spring Boot, Spring Cloud Config
-- JPA/Hibernate, Oracle, MySQL, MongoDB, Redis
+- JPA/Hibernate, Oracle, MySQL, MongoDB, ==Redis==
 - Kubernetes + Istio, GoCD, Git, Docker
 - Kafka, ELK, Prometheus + Thanos, Grafana
-##### 01. 강의 (~8월)
+##### 01. 강의 
 - [x] [한 번에 끝내는 SQL & Database](https://codingapple.com/course/sql-and-database/)
 - [x] [(무료) 매우쉽게 알려주는 git & github](https://codingapple.com/course/git-and-github/)
 - [ ] 김영한 JAVA 중급2편까지 정독 (~7/1)
-- [ ] [Node.js, MongoDB로 빠르게 웹서비스 만들기](https://codingapple.com/course/node-express-mongodb-server/)(7/8~)
 - [ ] [쉽게 배우는 Spring Boot & JPA](https://codingapple.com/course/spring-boot-jpa/)
-- [ ] 스프링 상세플랜 필요
+- [ ] 하단 강의 리스트 참고
 ##### 02. JAVA 문제풀이 매일 1문제
 - 1단계 - 자료구조 + 해시 + 큐/스택 (1~11)
 - 2단계 - 문자열 처리 + 구현 (12~21)
@@ -20,9 +19,9 @@
 - 6단계 - 시간복잡도 감각(41~45)
 - 7단계 - 과제형 구현 + 시뮬레이션 + 응용 (**46~60**)
 - 8단계 - Lv.3 입문 (DP / 이분탐색 / 그래프) (**61~65**)
-- ** 시간 없을 땐 1~45 → 46 → 48 → 50 → 60 → 63 → 65**
+- ** 시간 없다면 1~45 → 46 → 48 → 50 → 60 → 63 → 65**
 
-- [ ] 1. [기능개발](https://school.programmers.co.kr/learn/courses/30/lessons/42586)
+- [x] 1. [기능개발](https://school.programmers.co.kr/learn/courses/30/lessons/42586)
 - [ ] 2. [프로세스](https://school.programmers.co.kr/learn/courses/30/lessons/42587)
 - [ ] 3. [다리를 지나는 트럭](https://school.programmers.co.kr/learn/courses/30/lessons/42583)
 - [ ] 4. [주식가격](https://school.programmers.co.kr/learn/courses/30/lessons/42584)
@@ -91,14 +90,13 @@
 - 진행중인 업무정리
 - 구조/흐름 정리
 - 트러블슈팅 정리 
-##### 04. 개인 프로젝트(9월~)
+##### 04. 개인 프로젝트(9월~)x
 - 안써본 기술스택 사용 목적
 - AI 포함
-
 ##### 99. 보류
-- [ ] HTML/CSS 
-- [ ] JavaScript 기초
-
+- [ ] [HTML/CSS All-in-one : Bootstrap, SASS, animation 까지](https://codingapple.com/course/html-basics/)
+- [ ] [JavaScript 입문과 웹 UI개발](https://codingapple.com/course/javascript-jquery-ui/)
+- [ ] [Node.js, MongoDB로 빠르게 웹서비스 만들기](https://codingapple.com/course/node-express-mongodb-server/)
 ##### 강의 리스트
 
 |                                                                                                                                                                                                                       | Java | Spring | SQL | TOT |
