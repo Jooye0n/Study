@@ -7,7 +7,7 @@
 ##### 01. 강의 
 - [x] [한 번에 끝내는 SQL & Database](https://codingapple.com/course/sql-and-database/)
 - [x] [(무료) 매우쉽게 알려주는 git & github](https://codingapple.com/course/git-and-github/)
-- [ ] 김영한 JAVA 중급2편까지 정독 (~7/1)
+- [x] 김영한 JAVA 중급2편까지 정독 (~7/1)
 - [ ] [쉽게 배우는 Spring Boot & JPA](https://codingapple.com/course/spring-boot-jpa/)
 - [ ] 하단 강의 리스트 참고
 ##### 02. JAVA 문제풀이 매일 1문제
@@ -22,70 +22,74 @@
 - ** 시간 없다면 1~45 → 46 → 48 → 50 → 60 → 63 → 65**
 
 - [x] 1. [기능개발](https://school.programmers.co.kr/learn/courses/30/lessons/42586)
-- [ ] 2. [프로세스](https://school.programmers.co.kr/learn/courses/30/lessons/42587)
-- [ ] 3. [다리를 지나는 트럭](https://school.programmers.co.kr/learn/courses/30/lessons/42583)
-- [ ] 4. [주식가격](https://school.programmers.co.kr/learn/courses/30/lessons/42584)
-- [ ] 5. [올바른 괄호](https://school.programmers.co.kr/learn/courses/30/lessons/12909)
-- [ ] 6. [짝지어 제거하기](https://school.programmers.co.kr/learn/courses/30/lessons/12973)
-- [ ] 7. [전화번호 목록](https://school.programmers.co.kr/learn/courses/30/lessons/42577)
-- [ ] 8. [의상](https://school.programmers.co.kr/learn/courses/30/lessons/42578)
-- [ ] 9. [베스트앨범](https://school.programmers.co.kr/learn/courses/30/lessons/42579)
-- [ ] 10. [더 맵게](https://school.programmers.co.kr/learn/courses/30/lessons/42626)
-- [ ] 11. [이중우선순위큐](https://school.programmers.co.kr/learn/courses/30/lessons/42628)
-- [ ] 12. [오픈채팅방](https://school.programmers.co.kr/learn/courses/30/lessons/42888)
-- [ ] 13. [뉴스 클러스터링](https://school.programmers.co.kr/learn/courses/30/lessons/17677)
-- [ ] 14. [캐시](https://school.programmers.co.kr/learn/courses/30/lessons/17680)
-- [ ] 15. [압축](https://school.programmers.co.kr/learn/courses/30/lessons/17684)
-- [ ] 16. [파일명 정렬](https://school.programmers.co.kr/learn/courses/30/lessons/17686)
-- [ ] 17. [방금그곡](https://school.programmers.co.kr/learn/courses/30/lessons/17683)
-- [ ] 18. [주차 요금 계산](https://school.programmers.co.kr/learn/courses/30/lessons/92341)
-- [ ] 19. [과제 진행하기](https://school.programmers.co.kr/learn/courses/30/lessons/176962)
-- [ ] 20. [택배상자](https://school.programmers.co.kr/learn/courses/30/lessons/131704)
-- [ ] 21. [롤케이크 자르기](https://school.programmers.co.kr/learn/courses/30/lessons/132265)
-- [ ] 22. [카펫](https://school.programmers.co.kr/learn/courses/30/lessons/42842)
-- [ ] 23. [피로도](https://school.programmers.co.kr/learn/courses/30/lessons/87946)
-- [ ] 24. [모음사전](https://school.programmers.co.kr/learn/courses/30/lessons/84512)
-- [ ] 25. [소수 찾기](https://school.programmers.co.kr/learn/courses/30/lessons/42839)
-- [ ] 26. [수식 최대화](https://school.programmers.co.kr/learn/courses/30/lessons/67257)
-- [ ] 27. [메뉴 리뉴얼](https://school.programmers.co.kr/learn/courses/30/lessons/72411)
-- [ ] 28. [양궁대회](https://school.programmers.co.kr/learn/courses/30/lessons/92342)
-- [ ] 29. [타겟 넘버](https://school.programmers.co.kr/learn/courses/30/lessons/43165)
-- [ ] 30. [게임 맵 최단거리](https://school.programmers.co.kr/learn/courses/30/lessons/1844)
-- [ ] 31. [전력망을 둘로 나누기](https://school.programmers.co.kr/learn/courses/30/lessons/86971)
-- [ ] 32. [네트워크](https://school.programmers.co.kr/learn/courses/30/lessons/43162)
-- [ ] 33. [단어 변환](https://school.programmers.co.kr/learn/courses/30/lessons/43163)
-- [ ] 34. [여행경로](https://school.programmers.co.kr/learn/courses/30/lessons/43164)
-- [ ] 35. [가장 먼 노드](https://school.programmers.co.kr/learn/courses/30/lessons/49189)
-- [ ] 36. [구명보트](https://school.programmers.co.kr/learn/courses/30/lessons/42885)
-- [ ] 37. [큰 수 만들기](https://school.programmers.co.kr/learn/courses/30/lessons/42883)
-- [ ] 38. [조이스틱](https://school.programmers.co.kr/learn/courses/30/lessons/42860)
-- [ ] 39. [체육복](https://school.programmers.co.kr/learn/courses/30/lessons/42862)
-- [ ] 40. [귤 고르기](https://school.programmers.co.kr/learn/courses/30/lessons/138476)
-- [ ] 41. [할인 행사](https://school.programmers.co.kr/learn/courses/30/lessons/131127)
-- [ ] 42. [두 큐 합 같게 만들기](https://school.programmers.co.kr/learn/courses/30/lessons/118667)
-- [ ] 43. [뒤에 있는 큰 수 찾기](https://school.programmers.co.kr/learn/courses/30/lessons/154539)
-- [ ] 44. [연속 부분 수열 합의 개수](https://school.programmers.co.kr/learn/courses/30/lessons/131701)
-- [ ] 45. [숫자 변환하기](https://school.programmers.co.kr/learn/courses/30/lessons/154538)
-- [ ] 46. [후보키](https://school.programmers.co.kr/learn/courses/30/lessons/42890)
-- [ ] 47. [거리두기 확인하기](https://school.programmers.co.kr/learn/courses/30/lessons/81302)
-- [ ] 48. [프렌즈4블록](https://school.programmers.co.kr/learn/courses/30/lessons/17679)
-- [ ] 49. [빛의 경로 사이클](https://school.programmers.co.kr/learn/courses/30/lessons/86052)
-- [ ] 50. [배달](https://school.programmers.co.kr/learn/courses/30/lessons/12978)
-- [ ] 51. [예상 대진표](https://school.programmers.co.kr/learn/courses/30/lessons/12985)
-- [ ] 52. [점프와 순간 이동](https://school.programmers.co.kr/learn/courses/30/lessons/12980)
-- [ ] 53. [N개의 최소공배수](https://school.programmers.co.kr/learn/courses/30/lessons/12953)
-- [ ] 54. [다음 큰 숫자](https://school.programmers.co.kr/learn/courses/30/lessons/12911)
-- [ ] 55. [멀리 뛰기](https://school.programmers.co.kr/learn/courses/30/lessons/12914)
-- [ ] 56. [n² 배열 자르기](https://school.programmers.co.kr/learn/courses/30/lessons/87390)
-- [ ] 57. [행렬 테두리 회전하기](https://school.programmers.co.kr/learn/courses/30/lessons/77485)
-- [ ] 58. [삼각 달팽이](https://school.programmers.co.kr/learn/courses/30/lessons/68645)
-- [ ] 59. [쿼드압축 후 개수 세기](https://school.programmers.co.kr/learn/courses/30/lessons/68936)
-- [ ] 60. [튜플](https://school.programmers.co.kr/learn/courses/30/lessons/64065)
-- [ ] 61. [정수 삼각형](https://school.programmers.co.kr/learn/courses/30/lessons/43105)
+- [x] 2. [프로세스](https://school.programmers.co.kr/learn/courses/30/lessons/42587)
+- [x] 3. [다리를 지나는 트럭](https://school.programmers.co.kr/learn/courses/30/lessons/42583) 실패
+- [x] 4. [올바른 괄호](https://school.programmers.co.kr/learn/courses/30/lessons/12909)
+- [x] 5. [주식가격](https://school.programmers.co.kr/learn/courses/30/lessons/42584)
+- [x] 6. [의상](https://school.programmers.co.kr/learn/courses/30/lessons/42578)
+- [x] 7. [더 맵게](https://school.programmers.co.kr/learn/courses/30/lessons/42626)
+- [x] 8. [전화번호 목록](https://school.programmers.co.kr/learn/courses/30/lessons/42577)
+- [x] 9. [짝지어 제거하기](https://school.programmers.co.kr/learn/courses/30/lessons/12973)
+- [x] 10. [구명보트](https://school.programmers.co.kr/learn/courses/30/lessons/42885)
+- [x] 11. [베스트앨범](https://school.programmers.co.kr/learn/courses/30/lessons/42579)
+- [x] 12. [카펫](https://school.programmers.co.kr/learn/courses/30/lessons/42842)
+- [x] 13. [오픈채팅방](https://school.programmers.co.kr/learn/courses/30/lessons/42888)
+- [x] 14. [캐시](https://school.programmers.co.kr/learn/courses/30/lessons/17680)
+- [x] 15. [택배상자](https://school.programmers.co.kr/learn/courses/30/lessons/131704)
+- [x] 16. [타겟 넘버](https://school.programmers.co.kr/learn/courses/30/lessons/43165)
+- [x] 17. [게임 맵 최단거리](https://school.programmers.co.kr/learn/courses/30/lessons/1844)
+- [x] 18. [할인 행사](https://school.programmers.co.kr/learn/courses/30/lessons/131127)
+- [x] 19. [귤 고르기](https://school.programmers.co.kr/learn/courses/30/lessons/138476)
+- [x] 20. [튜플](https://school.programmers.co.kr/learn/courses/30/lessons/64065)
+- [x] 21. [피로도](https://school.programmers.co.kr/learn/courses/30/lessons/87946)
+- [x] 22. [롤케이크 자르기](https://school.programmers.co.kr/learn/courses/30/lessons/132265)
+- [x] 23. [주차 요금 계산](https://school.programmers.co.kr/learn/courses/30/lessons/92341)
+
+- [x] 24. [뒤에 있는 큰 수 찾기](https://school.programmers.co.kr/learn/courses/30/lessons/154539)
+- [ ] 25. [두 큐 합 같게 만들기](https://school.programmers.co.kr/learn/courses/30/lessons/118667)
+- [ ] 26. [과제 진행하기](https://school.programmers.co.kr/learn/courses/30/lessons/176962)
+- [ ] 27. [네트워크](https://school.programmers.co.kr/learn/courses/30/lessons/43162)
+- [ ] 28. [이중우선순위큐](https://school.programmers.co.kr/learn/courses/30/lessons/42628)
+- [ ] 29. [모음사전](https://school.programmers.co.kr/learn/courses/30/lessons/84512)
+- [ ] 30. [큰 수 만들기](https://school.programmers.co.kr/learn/courses/30/lessons/42883)
+- [ ] 31. [숫자 변환하기](https://school.programmers.co.kr/learn/courses/30/lessons/154538)
+- [ ] 32. [여행경로](https://school.programmers.co.kr/learn/courses/30/lessons/43164)
+- [ ] 33. [연속 부분 수열 합의 개수](https://school.programmers.co.kr/learn/courses/30/lessons/131701)
+
+- [ ] 34. [배달](https://school.programmers.co.kr/learn/courses/30/lessons/12978)
+- [ ] 35. [체육복](https://school.programmers.co.kr/learn/courses/30/lessons/42862)
+- [ ] 36. [전력망을 둘로 나누기](https://school.programmers.co.kr/learn/courses/30/lessons/86971)
+- [ ] 37. [다음 큰 숫자](https://school.programmers.co.kr/learn/courses/30/lessons/12911)
+- [ ] 38. [행렬 테두리 회전하기](https://school.programmers.co.kr/learn/courses/30/lessons/77485)
+- [ ] 39. [뉴스 클러스터링](https://school.programmers.co.kr/learn/courses/30/lessons/17677)
+- [ ] 40. [파일명 정렬](https://school.programmers.co.kr/learn/courses/30/lessons/17686)
+- [ ] 41. [가장 먼 노드](https://school.programmers.co.kr/learn/courses/30/lessons/49189)
+- [ ] 42. [N개의 최소공배수](https://school.programmers.co.kr/learn/courses/30/lessons/12953)
+- [ ] 43. [점프와 순간 이동](https://school.programmers.co.kr/learn/courses/30/lessons/12980)
+
+- [ ] 44. [정수 삼각형](https://school.programmers.co.kr/learn/courses/30/lessons/43105)
+- [ ] 45. [멀리 뛰기](https://school.programmers.co.kr/learn/courses/30/lessons/12914)
+- [ ] 46. [삼각 달팽이](https://school.programmers.co.kr/learn/courses/30/lessons/68645)
+- [ ] 47. [방금그곡](https://school.programmers.co.kr/learn/courses/30/lessons/17683)
+- [ ] 48. [수식 최대화](https://school.programmers.co.kr/learn/courses/30/lessons/67257)
+- [ ] 49. [소수 찾기](https://school.programmers.co.kr/learn/courses/30/lessons/42839)
+- [ ] 50. [쿼드압축 후 개수 세기](https://school.programmers.co.kr/learn/courses/30/lessons/68936)
+- [ ] 51. [압축](https://school.programmers.co.kr/learn/courses/30/lessons/17684)
+- [ ] 52. [디스크 컨트롤러](https://school.programmers.co.kr/learn/courses/30/lessons/42627)
+- [ ] 53. [입국심사](https://school.programmers.co.kr/learn/courses/30/lessons/43238)
+
+- [ ] 54. [후보키](https://school.programmers.co.kr/learn/courses/30/lessons/42890)
+- [ ] 55. [메뉴 리뉴얼](https://school.programmers.co.kr/learn/courses/30/lessons/72411)
+- [ ] 56. [거리두기 확인하기](https://school.programmers.co.kr/learn/courses/30/lessons/81302)
+- [ ] 57. [프렌즈4블록](https://school.programmers.co.kr/learn/courses/30/lessons/17679)
+- [ ] 58. [빛의 경로 사이클](https://school.programmers.co.kr/learn/courses/30/lessons/86052)
+- [ ] 59. [조이스틱](https://school.programmers.co.kr/learn/courses/30/lessons/42860)
+- [ ] 60. [양궁대회](https://school.programmers.co.kr/learn/courses/30/lessons/92342)
+- [ ] 61. [단어 변환](https://school.programmers.co.kr/learn/courses/30/lessons/43163)
 - [ ] 62. [등굣길](https://school.programmers.co.kr/learn/courses/30/lessons/42898)
-- [ ] 63. [입국심사](https://school.programmers.co.kr/learn/courses/30/lessons/43238)
+- [ ] 63. [n² 배열 자르기](https://school.programmers.co.kr/learn/courses/30/lessons/87390)
 - [ ] 64. [섬 연결하기](https://school.programmers.co.kr/learn/courses/30/lessons/42861)
-- [ ] 65. [디스크 컨트롤러](https://school.programmers.co.kr/learn/courses/30/lessons/42627)
+- [ ] 65. [수식 최대화](https://school.programmers.co.kr/learn/courses/30/lessons/67257)
 ##### 03. 현 업무정리 매주 1회
 - 진행중인 업무정리
 - 구조/흐름 정리
@@ -126,4 +130,45 @@
 | [김영한의 실전 자바 - 고급 3편, 람다, 스트림, 함수형 프로그래밍](https://www.inflearn.com/course/%EA%B9%80%EC%98%81%ED%95%9C%EC%9D%98-%EC%8B%A4%EC%A0%84-%EC%9E%90%EB%B0%94-%EA%B3%A0%EA%B8%89-3)                                             | ✔️   |        |     |     |
 | [김영한의 실전 데이터베이스 - 설계 1편, 현대적 데이터 모델링 완전 정복](https://www.inflearn.com/course/%EA%B9%80%EC%98%81%ED%95%9C-%EC%8B%A4%EC%A0%84-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4-%EC%84%A4%EA%B3%841%ED%8E%B8)       |      |        | ✔️  |     |
 | [김영한의 실전 데이터베이스 - 설계 2편, 실무에서 반드시 마주치는 9가지 설계 패턴](https://www.inflearn.com/course/%EA%B9%80%EC%98%81%ED%95%9C-%EC%8B%A4%EC%A0%84-%EB%8D%B0%EC%9D%B4%ED%84%B0%EB%B2%A0%EC%9D%B4%EC%8A%A4-%EC%84%A4%EA%B3%842%ED%8E%B8) |      |        | ✔️  |     |
-|                                                                                                                                                                                                                       | 7    | 14     | 4   | 25  |
+| https://prgrms.notion.site/Spring-AI-MSA-7-3673e47046bf80c2a7a9eec196102b63                                                                                                                                           | 7    | 14     | 4   | 25  |
+|                                                                                                                                                                                                                       |      |        |     |     |
+강의노트
+- [x] 0. 자바 입문
+- [ ] 1. 자바 기본
+- [ ] 2. 자바 중급1
+- [ ] 3. 자바 중급2 
+- [ ] 스프링 DB 1편 - 데이터 접근 핵심 원리
+
+~8/23
+- [ ] [쉽게 배우는 Spring Boot & JPA](https://codingapple.com/course/spring-boot-jpa/) 47강
+- [ ] [스프링 입문 - 코드로 배우는 스프링 부트, 웹 MVC, DB 접근 기술](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-%EC%9E%85%EB%AC%B8-%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8)28강
+- [ ] [스프링 핵심 원리 - 기본편](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-%ED%95%B5%EC%8B%AC-%EC%9B%90%EB%A6%AC-%EA%B8%B0%EB%B3%B8%ED%8E%B8)65강
+- [ ] [모든 개발자를 위한 HTTP 웹 기본 지식](https://www.inflearn.com/course/http-%EC%9B%B9-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC) 41강 
+- [ ] 구조도 작성 / 업무 정리 / 이슈 정리
+- [ ] 인재풀 등록
+
+~8/31
+- [ ] 변액 시험
+~9/6
+- [ ] 직필 시험
+
+9/7~
+- [ ] [스프링 MVC 1편 - 백엔드 웹 개발 핵심 기술](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-mvc-1) 72강
+- [x] [스프링 DB 1편 - 데이터 접근 핵심 원리](https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-db-1) 57강 (강의노트만 정리)
+- [ ] [자바 ORM 표준 JPA 프로그래밍 - 기본편](https://www.inflearn.com/course/ORM-JPA-Basic) 56강
+
+9월
+- [ ] 프로젝트
+- Spring Data JPA 15%  
+- Docker 10%  
+- Redis 10%  
+- Kafka 10%  
+- Gradle/Git 5%
+
+366
+하루 한문제
+
+41일
+184강 남아서 .. 4강씩 들어도 부족함 .. 
+HTTP 하루 1강
+
