@@ -21,7 +21,7 @@
   - 분산처리에 좋아서 입출력이 많은 서비스에 많이 사용.
   - DB 간 정확도/일관성 떨어질 수 있음.
 - Colum-family DB
-  - ex) cassandra, google bigtable
+  - ex) cassandra(카산드라), google bigtable
   - 테이블을 안에 로우를 여러개 만들어서 로우 마다 자유롭게 컬럼을 만들어서 데이터 기입.
   - 정규화 안함. 분산처리 잘함.
   - 입출력이 많은 경우 사용. 시계열 데이터 저장에 용이 (넷플릭스에서 쓴다고함)
@@ -37,9 +37,11 @@
   - 백업도 쉬워짐
   - ex) MySQL, PostgreSQL, ORACLE, SQL Server
 - MySQL 서버 띄워놔야 DB 조작가능
+  ```shell
   - brew install mysql //설치
   - brew services start mysql // MySQL 서버 띄우기
   - mysql -u root -p //실행
+  ```
 - DBeaber(디비버) 이용하여 조작해보자 (워크밴치랑 동일하지만 깔끔/쉬운 GUI 툴)
 
 # 3. DML (Data Manipulation Language)
